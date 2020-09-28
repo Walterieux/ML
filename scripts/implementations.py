@@ -60,6 +60,8 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
             break
         w = w - gamma/(n_iter+1) * compute_gradient(y, tx, w, n)
         w_toplot.append(w)
+    
+    
     toplot= np.zeros((max_iters,1))
     for i in range(max_iters):
         toplot[i]=compute_loss(y, tx,w_toplot[i] )
@@ -70,6 +72,8 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     plt.xlabel("number of iterations")
     plt.ylabel("Error")
     plt.yscale("log")
+    
+    
     return w, compute_loss(y, tx, w)
 
 
@@ -83,5 +87,5 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
         subgradient = compute_gradient(y[rnd_sample[n_iter]], tx[rnd_sample[n_iter], :], w, n)
         if np.linalg.norm(subgradient) <= 1e-6:
             break
-        w = w - gamma * subgradient
+        w = w - gamma/(n_iter+1) * subgradient
     return w, compute_loss(y, tx, w)
