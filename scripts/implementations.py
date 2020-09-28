@@ -12,8 +12,15 @@ def compute_loss(y, tx, w):
     You can calculate the loss using mse or mae.
     For this we will calculate MSE
     """
-    total = 0.5 * np.mean(np.square(y - np.dot(np.transpose(tx), w)))
+    
+    total = 0.5 *  np.mean(np.square(y - np.dot(tx, w)))
     return total
+
+def compute_loss_MAE(y,tx,w): 
+    
+    total=np.mean(np.abs(y-np.dot(tx,w)))
+    return total
+    
 
     # ***************************************************
     # INSERT YOUR CODE HERE
@@ -26,6 +33,13 @@ def compute_gradient(y, tx, w, N):
     gradient = -1 / N * np.dot(np.transpose(tx), y - np.dot(tx, w))
     return gradient
 
+
+
+def compute_gradient_MAE(y,tx,w,N):
+    #on a 1/N sum_1^N |y-x^_ntw|
+    #donc le gradient ça devrait être -1/N * X^T sign(y-x^t_nw) 
+    gradient= -1/N * np.dot(np.tranpose(tx),np.sign(y-np.dot(tx,w)))
+    return gradient
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     """Gradient descent algorithm."""
