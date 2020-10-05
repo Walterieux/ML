@@ -88,3 +88,24 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
             break
         w = w - gamma * subgradient
     return w, compute_loss(y, tx, w)
+
+
+def least_squares(y, tx):
+    x_transp = np.transpose(tx)
+    w = np.linalg.solve(np.dot(x_transp, tx), np.dot(x_transp, y))
+    return w, compute_loss(y, tx, w)
+
+
+def build_poly(x, degree):
+    """polynomial basis functions for input data x, for j=0 up to j=degree."""
+    rows, cols = np.indices((x.shape[0], degree))
+    res = x[rows]
+    res[rows, cols] = res[rows, cols] ** cols
+    return res
+
+
+def ridge_regression(y, tx, lambda_):
+    x_transp = np.transpose(tx)
+    w = np.linalg.solve(np.dot(x_transp, tx) + np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0])),
+                        np.dot(x_transp, y))
+    return w, compute_loss(y, tx, w)
