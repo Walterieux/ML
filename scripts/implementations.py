@@ -87,6 +87,7 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
         if np.linalg.norm(subgradient) <= 1e-6:
             break
         w = w - gamma * subgradient
+
     return w, compute_loss(y, tx, w)
 
 
@@ -106,6 +107,25 @@ def build_poly(x, degree):
 
 def ridge_regression(y, tx, lambda_):
     x_transp = np.transpose(tx)
-    w = np.linalg.solve(np.dot(x_transp, tx) + np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0])),
-                        np.dot(x_transp, y))
+    
+    A=np.dot(x_transp, tx)
+    
+    B=np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0]))
+    
+    y1= np.dot(x_transp, y)
+    
+    w = np.linalg.solve(A+B,y1)
+    
     return w, compute_loss(y, tx, w)
+
+def least_square(y,tx):
+    X_transp=np.transpose(tx)
+
+    w=np.linalg.solve(np.dot(X_transp,tx),np.dot(X_transp,y))
+    return w, compute_loss(y, tx, w)
+
+
+def variance_half_max_index(tx): 
+    sorted_variance=np.argsort(np.std(tx, axis=0))
+    return sorted_variance[len(sorted_variance)//5:]
+    
