@@ -87,5 +87,12 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
         subgradient = compute_gradient(y[rnd_sample[n_iter]], tx[rnd_sample[n_iter], :], w, n)
         if np.linalg.norm(subgradient) <= 1e-6:
             break
-        w = w - gamma/(n_iter+1) * subgradient
+        w = w - gamma * subgradient
     return w, compute_loss(y, tx, w)
+
+def least_square(y,tx):
+    X_transp=np.transpose(tx)
+    w=np.linalg.solve(X_transp,np.dot(X_transp,tx))
+    return w
+    return np.linalg.lstsq(X_transp,np.dot(X_transp,tx))
+
