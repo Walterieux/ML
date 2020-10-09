@@ -99,33 +99,35 @@ def least_squares(y, tx):
 
 def build_poly(x, degree):
     """polynomial basis functions for input data x, for j=0 up to j=degree."""
-    rows, cols = np.indices((x.shape[0], degree))
-    res = x[rows]
-    res[rows, cols] = res[rows, cols] ** cols
+    x_flat = np.ndarray.flatten(x)
+    rows, cols = np.indices((x_flat.shape[0], degree))
+    res = x_flat[rows]
+    res[rows, cols] = res[rows, cols] ** (cols + 1)
+    res = np.reshape(res, (x.shape[0], -1), 'A')
     return res
 
 
 def ridge_regression(y, tx, lambda_):
     x_transp = np.transpose(tx)
-    
-    A=np.dot(x_transp, tx)
-    
-    B=np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0]))
-    
-    y1= np.dot(x_transp, y)
-    
-    w = np.linalg.solve(A+B,y1)
-    
-    return w, compute_loss(y, tx, w)
 
-def least_square(y,tx):
-    X_transp=np.transpose(tx)
+    A = np.dot(x_transp, tx)
 
-    w=np.linalg.solve(np.dot(X_transp,tx),np.dot(X_transp,y))
+    B = np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0]))
+
+    y1 = np.dot(x_transp, y)
+
+    w = np.linalg.solve(A + B, y1)
+
     return w, compute_loss(y, tx, w)
 
 
-def variance_half_max_index(tx): 
-    sorted_variance=np.argsort(np.std(tx, axis=0))
-    return sorted_variance[len(sorted_variance)//5:]
-    
+def least_square(y, tx):
+    X_transp = np.transpose(tx)
+
+    w = np.linalg.solve(np.dot(X_transp, tx), np.dot(X_transp, y))
+    return w, compute_loss(y, tx, w)
+
+
+def variance_half_max_index(tx):
+    sorted_variance = np.argsort(np.std(tx, axis=0))
+    return sorted_variance[len(sorted_variance) // 5:]
