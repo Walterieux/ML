@@ -7,6 +7,7 @@ Created on Thu Sep 24 15:47:51 2020
 import numpy as np
 from matplotlib import pyplot as plt
 
+
 def compute_loss(y, tx, w):
     """Calculate the loss.
     You can calculate the loss using mse or mae.
@@ -46,9 +47,9 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     n = len(y)
     print("max_iters = " + repr(max_iters))
     w = initial_w
-    w_toplot=[]
+    w_toplot = []
     w_toplot.append(w)
-    
+
     for n_iter in range(max_iters):
 
         # 1) on pourrait rajouter une autre condition ici assez simple qui regarde l'écart entre deux différents w et si jamais 
@@ -58,29 +59,27 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
         current_gradient = compute_gradient(y, tx, w, n)
         if np.linalg.norm(current_gradient) <= 1e-6:
             break
-        w = w - gamma/(n_iter+1) * compute_gradient(y, tx, w, n)
+        w = w - gamma / (n_iter + 1) * compute_gradient(y, tx, w, n)
         w_toplot.append(w)
-    
-    
-    toplot= np.zeros((max_iters,1))
+
+    toplot = np.zeros((max_iters, 1))
     for i in range(max_iters):
-        toplot[i]=compute_loss(y, tx,w_toplot[i] )
+        toplot[i] = compute_loss(y, tx, w_toplot[i])
     print(toplot)
-    plt.plot(np.linspace(1,max_iters,max_iters),toplot)
-    plt.scatter(np.linspace(1,max_iters,max_iters),toplot)
+    plt.plot(np.linspace(1, max_iters, max_iters), toplot)
+    plt.scatter(np.linspace(1, max_iters, max_iters), toplot)
     plt.title("Error in term of number of iterations")
     plt.xlabel("number of iterations")
     plt.ylabel("Error")
     plt.yscale("log")
-    
-    
+
     return w, compute_loss(y, tx, w)
 
 
 def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
     n = len(y)
 
-    rnd_sample = np.random.random_integers(0, n, max_iters)
+    rnd_sample = np.random.random_integers(0, n - 1, max_iters)
 
     w = initial_w
     for n_iter in range(max_iters):
@@ -88,11 +87,45 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
         if np.linalg.norm(subgradient) <= 1e-6:
             break
         w = w - gamma * subgradient
+
+    return w, compute_loss(y, tx, w)
+
+
+def least_squares(y, tx):
+    x_transp = np.transpose(tx)
+    w = np.linalg.solve(np.dot(x_transp, tx), np.dot(x_transp, y))
+    return w, compute_loss(y, tx, w)
+
+
+def build_poly(x, degree):
+    """polynomial basis functions for input data x, for j=0 up to j=degree."""
+    rows, cols = np.indices((x.shape[0], degree))
+    res = x[rows]
+    res[rows, cols] = res[rows, cols] ** cols
+    return res
+
+
+def ridge_regression(y, tx, lambda_):
+    x_transp = np.transpose(tx)
+    
+    A=np.dot(x_transp, tx)
+    
+    B=np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0]))
+    
+    y1= np.dot(x_transp, y)
+    
+    w = np.linalg.solve(A+B,y1)
+    
     return w, compute_loss(y, tx, w)
 
 def least_square(y,tx):
     X_transp=np.transpose(tx)
-    w=np.linalg.solve(X_transp,np.dot(X_transp,tx))
-    return w
-    return np.linalg.lstsq(X_transp,np.dot(X_transp,tx))
 
+    w=np.linalg.solve(np.dot(X_transp,tx),np.dot(X_transp,y))
+    return w, compute_loss(y, tx, w)
+
+
+def variance_half_max_index(tx): 
+    sorted_variance=np.argsort(np.std(tx, axis=0))
+    return sorted_variance[len(sorted_variance)//5:]
+    
