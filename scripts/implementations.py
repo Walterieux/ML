@@ -97,14 +97,51 @@ def least_squares(y, tx):
     return w, compute_loss(y, tx, w)
 
 
+def build_poly_variance(tx,allparam,param1=0,param2=3,param3=5):
+    
+    #classification en fonction de la variance de chaque paramètre: 
+    sorted_variance = np.argsort(np.std(tx, axis=0))
+    x=tx[:,sorted_variance]
+    nrows,ncols=np.shape(x)
+    
+    if allparam==0:
+        nb_gr_vr=ncols//3
+        params=np.array([0,3,5])
+    else:
+        #nb_gr_vr=ncols//15
+        #params=np.array([0,0,0,0,2,2,3,3,3,3,4,5,5,5,5])
+        #print(len(params))
+        nb_gr_vr=ncols//10
+        params=np.array([0,0,0,2,3,3,4,5,5,5])
+    
+    #calcul du nombre total de colonnes, on ajoute 1 étant donné qu'on impose un terme indépendant.     
+    ncol_tot=np.sum(params*nb_gr_vr)+1
+    
+    newx = np.zeros((nrows,ncol_tot))
+    
+    current=0
+    
+    for counter,param in enumerate(params):
+        newx[:,current:current+nb_gr_vr*param]=build_poly(x[:,(counter)*nb_gr_vr:(counter+1)*nb_gr_vr],param)
+        current=nb_gr_vr*param+current
+    newx[:,-1]=1
+    
+    return newx
+    
+
+
 def build_poly(x, degree):
     """polynomial basis functions for input data x, for j=0 up to j=degree."""
-    x_flat = np.ndarray.flatten(x)
-    rows, cols = np.indices((x_flat.shape[0], degree))
-    res = x_flat[rows]
-    res[rows, cols] = res[rows, cols] ** (cols + 1)
+    x_flat = np.ndarray.flatten(x) # ça va juste reshape une array en 1d array. 
+    
+    rows, cols = np.indices((x_flat.shape[0], degree)) # 
+    res = x_flat[rows] # ça ça va juste augmenter le nombre de x_flat ça va le duppliquer degree fois. 
+    
+    res[rows, cols] = res[rows, cols] ** (cols + 1) # mise à l'exposant. 
     res = np.reshape(res, (x.shape[0], -1), 'A')
     return res
+
+
 
 
 def ridge_regression(y, tx, lambda_):
@@ -131,3 +168,8 @@ def least_square(y, tx):
 def variance_half_max_index(tx):
     sorted_variance = np.argsort(np.std(tx, axis=0))
     return sorted_variance[len(sorted_variance) // 5:]
+b=np.arange(6)
+print(b)
+"""tx=np.array([[1,2],[2,3],[4,5]])
+z=build_poly(tx,2)
+print(z)"""
