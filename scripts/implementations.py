@@ -97,52 +97,49 @@ def least_squares(y, tx):
     return w, compute_loss(y, tx, w)
 
 
-def build_poly_variance(tx,allparam,param1=0,param2=3,param3=5):
-    
-    #classification en fonction de la variance de chaque paramètre: 
+def build_poly_variance(tx, allparam, param1=0, param2=3, param3=5):
+    # classification en fonction de la variance de chaque paramètre:
     sorted_variance = np.argsort(np.std(tx, axis=0))
-    x=tx[:,sorted_variance]
-    nrows,ncols=np.shape(x)
-    
-    if allparam==0:
-        nb_gr_vr=ncols//3
-        params=np.array([0,3,3])
+    x = tx[:, sorted_variance]
+    nrows, ncols = np.shape(x)
+
+    if allparam == 0:
+        nb_gr_vr = ncols // 3
+        params = np.array([0, 3, 3])
     else:
-        #nb_gr_vr=ncols
-        #params=np.array([0,0,0,0,2,2,3,3,3,3,4,5,5,5,5])
-        #print(len(params))
-        nb_gr_vr=ncols//10
-        params=np.array([0,0,0,2,3,3,5,6,6,6])
-    
-    #calcul du nombre total de colonnes, on ajoute 1 étant donné qu'on impose un terme indépendant.     
-    ncol_tot=np.sum(params*nb_gr_vr)
-    
-    newx = np.zeros((nrows,ncol_tot))
-    
-    current=0
-    
-    for counter,param in enumerate(params):
+        # nb_gr_vr=ncols
+        # params=np.array([0,0,0,0,2,2,3,3,3,3,4,5,5,5,5])
+        # print(len(params))
+        nb_gr_vr = ncols // 10
+        params = np.array([0, 0, 0, 2, 3, 3, 5, 6, 6, 6])
+
+    # calcul du nombre total de colonnes, on ajoute 1 étant donné qu'on impose un terme indépendant.
+    ncol_tot = np.sum(params * nb_gr_vr)
+
+    newx = np.zeros((nrows, ncol_tot))
+
+    current = 0
+
+    for counter, param in enumerate(params):
         print(counter)
-        newx[:,current:current+nb_gr_vr*param]=build_poly(x[:,(counter)*nb_gr_vr:(counter+1)*nb_gr_vr],param)
-        current=nb_gr_vr*param+current
-    #newx[:,-1]=1
-    
+        newx[:, current:current + nb_gr_vr * param] = build_poly(x[:, (counter) * nb_gr_vr:(counter + 1) * nb_gr_vr],
+                                                                 param)
+        current = nb_gr_vr * param + current
+    # newx[:,-1]=1
+
     return newx
-    
 
 
 def build_poly(x, degree):
     """polynomial basis functions for input data x, for j=0 up to j=degree."""
-    x_flat = np.ndarray.flatten(x) # ça va juste reshape une array en 1d array. 
-    
-    rows, cols = np.indices((x_flat.shape[0], degree)) # 
-    res = x_flat[rows] # ça ça va juste augmenter le nombre de x_flat ça va le duppliquer degree fois. 
-    
-    res[rows, cols] = res[rows, cols] ** (cols + 1) # mise à l'exposant. 
+    x_flat = np.ndarray.flatten(x)  # ça va juste reshape une array en 1d array.
+
+    rows, cols = np.indices((x_flat.shape[0], degree))  #
+    res = x_flat[rows]  # ça ça va juste augmenter le nombre de x_flat ça va le duppliquer degree fois.
+
+    res[rows, cols] = res[rows, cols] ** (cols + 1)  # mise à l'exposant.
     res = np.reshape(res, (x.shape[0], -1), 'A')
     return res
-
-
 
 
 def ridge_regression(y, tx, lambda_):
@@ -172,27 +169,25 @@ def variance_half_max_index(tx):
 
 
 def clean_data(tx):
-    #standard deviation de chaque feature
-    
-    std_data=np.std(tx,axis=0)
-    #moyenne de chaque feature
-    
-    mean_data=np.mean(tx,axis=0)
-    
-    #deux arrays qui contiennent mean-std_deviation (logiquement on devrait avoir 95% de nos données 
-    #là dedans mais là c'est en 1d du coup on en aura moins nécessairement.. 
-    mean_below_std=mean_data-std_data
-    mean_up_std=mean_data+std_data
-    
-    #deux matrices de la taille de tx qui contiennent des booléans voir si chaque élément est bien dans 
-    #le cluster. 'première au dessus, l'autre en dessous. 
-    
-    uper_std=np.less(mean_below_std,tx)   
-    lower_std=np.greater(mean_up_std,tx)
-    
-    #matrice qui contient des boolean qui indique ici si c'est dans le cluster ou pas cette fois. 
-    clustered_data=(uper_std *lower_std)
-    
-    return tx[np.all(clustered_data,axis=1),:]
+    # standard deviation de chaque feature
 
-    
+    std_data = np.std(tx, axis=0)
+    # moyenne de chaque feature
+
+    mean_data = np.mean(tx, axis=0)
+
+    # deux arrays qui contiennent mean-std_deviation (logiquement on devrait avoir 95% de nos données
+    # là dedans mais là c'est en 1d du coup on en aura moins nécessairement..
+    mean_below_std = mean_data - std_data
+    mean_up_std = mean_data + std_data
+
+    # deux matrices de la taille de tx qui contiennent des booléans voir si chaque élément est bien dans
+    # le cluster. 'première au dessus, l'autre en dessous.
+
+    uper_std = np.less(mean_below_std, tx)
+    lower_std = np.greater(mean_up_std, tx)
+
+    # matrice qui contient des boolean qui indique ici si c'est dans le cluster ou pas cette fois.
+    clustered_data = (uper_std * lower_std)
+
+    return tx[np.all(clustered_data, axis=1), :]
