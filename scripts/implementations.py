@@ -6,7 +6,7 @@ Created on Thu Sep 24 15:47:51 2020
 """
 import numpy as np
 from matplotlib import pyplot as plt
-
+from proj1_helpers import *
 
 def compute_loss(y, tx, w):
     """Calculate the loss.
@@ -97,36 +97,65 @@ def least_squares(y, tx):
     return w, compute_loss(y, tx, w)
 
 
-def build_poly_variance(tx, allparam, param1=0, param2=3, param3=5):
+def sorted_by_variance(tx): 
+    return np.argsort(np.std(tx,axis=0))
+
+
+
+def test_find_degree(y_train,y_test,tx_train,tx_test):
+    degree1=np.arange(2,dtype=int)
+    degree2=np.arange(3,dtype=int)
+    degree3=np.linspace(1,4,4,dtype=int)
+    degree4=np.linspace(2,5,4,dtype=int)
+    degree5=np.linspace(3,6,4,dtype=int)
+    best_array=np.zeros(5,dtype=int)
+    min_value=10000
+    #len_degree2=len(degree2)
+    #len_degree3=len()
+    for i in degree1: 
+        for j in degree2: 
+            for k in degree3: 
+                for l in degree4: 
+                    for m in degree5: 
+                        print("i : " , i , "j : ", k , "k :" ,k, "l : ", l , "m : ", m )
+                        current_tx=build_poly_variance(tx_train, 0,i,j,k,l,m)
+                        weights, loss = ridge_regression(y_train, current_tx, 0.0)
+                        tx_test_poly=build_poly_variance(tx_test,0,i,j,k,l,m)
+                        #y_pred = predict_labels(weights, tx_test_poly)
+                        current_val=compute_loss(y_test, tx_test_poly, weights)
+                        if current_val<= min_value :
+                            min_value=current_val 
+                            print("current_val : ", current_val)
+                            best_array=np.array([i,j,k,l,m])
+    return min_value,best_array             
+                
+    
+def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5,degree4=4,degree5=5):
     # classification en fonction de la variance de chaque paramètre:
-    sorted_variance = np.argsort(np.std(tx, axis=0))
-    x = tx[:, sorted_variance]
-    nrows, ncols = np.shape(x)
+    nrows, ncols = np.shape(tx)
+
 
     if allparam == 0:
-        nb_gr_vr = ncols // 3
-        params = np.array([0, 3, 3])
+        params=np.array([degree1,degree2,degree3,degree4,degree5])
+        nb_gr_vr = ncols // 5
     else:
-        # nb_gr_vr=ncols
-        # params=np.array([0,0,0,0,2,2,3,3,3,3,4,5,5,5,5])
-        # print(len(params))
+       
         nb_gr_vr = ncols // 10
-        params = np.array([0, 0, 0, 2, 3, 3, 5, 6, 6, 6])
+        params = np.array([0,0,0,2,3,3,3,3,3,3])
 
     # calcul du nombre total de colonnes, on ajoute 1 étant donné qu'on impose un terme indépendant.
-    ncol_tot = np.sum(params * nb_gr_vr)
+    ncol_tot = np.sum(params * nb_gr_vr)+1
 
     newx = np.zeros((nrows, ncol_tot))
 
     current = 0
-
+    
     for counter, param in enumerate(params):
-        print(counter)
-        newx[:, current:current + nb_gr_vr * param] = build_poly(x[:, (counter) * nb_gr_vr:(counter + 1) * nb_gr_vr],
+        newx[:, current:current + nb_gr_vr * param] = build_poly(tx[:, (counter) * nb_gr_vr:(counter + 1) * nb_gr_vr],
                                                                  param)
         current = nb_gr_vr * param + current
-    # newx[:,-1]=1
-
+    newx[:,-1]=1
+    #print(newx)
     return newx
 
 
@@ -168,6 +197,17 @@ def variance_half_max_index(tx):
     return sorted_variance[len(sorted_variance) // 5:]
 
 
+
+def data_train_test(y,tx,pourcentage):
+    len_y=len(y)
+    len_test=int(pourcentage *len_y)
+    print(len_test)
+    y_train=y[:len_test]
+    y_test=y[len_test:]
+    tx_train=tx[:len_test,]
+    tx_test=tx[len_test:,]
+    return y_train,y_test,tx_train,tx_test
+    
 def clean_data(tx):
     # standard deviation de chaque feature
 
