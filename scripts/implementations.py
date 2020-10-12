@@ -106,25 +106,26 @@ def build_poly_variance(tx,allparam,param1=0,param2=3,param3=5):
     
     if allparam==0:
         nb_gr_vr=ncols//3
-        params=np.array([0,3,5])
+        params=np.array([0,3,3])
     else:
-        #nb_gr_vr=ncols//15
+        #nb_gr_vr=ncols
         #params=np.array([0,0,0,0,2,2,3,3,3,3,4,5,5,5,5])
         #print(len(params))
         nb_gr_vr=ncols//10
-        params=np.array([0,0,0,2,3,3,4,5,5,5])
+        params=np.array([0,0,0,2,3,3,5,6,6,6])
     
     #calcul du nombre total de colonnes, on ajoute 1 étant donné qu'on impose un terme indépendant.     
-    ncol_tot=np.sum(params*nb_gr_vr)+1
+    ncol_tot=np.sum(params*nb_gr_vr)
     
     newx = np.zeros((nrows,ncol_tot))
     
     current=0
     
     for counter,param in enumerate(params):
+        print(counter)
         newx[:,current:current+nb_gr_vr*param]=build_poly(x[:,(counter)*nb_gr_vr:(counter+1)*nb_gr_vr],param)
         current=nb_gr_vr*param+current
-    newx[:,-1]=1
+    #newx[:,-1]=1
     
     return newx
     
@@ -168,8 +169,30 @@ def least_square(y, tx):
 def variance_half_max_index(tx):
     sorted_variance = np.argsort(np.std(tx, axis=0))
     return sorted_variance[len(sorted_variance) // 5:]
-b=np.arange(6)
-print(b)
-"""tx=np.array([[1,2],[2,3],[4,5]])
-z=build_poly(tx,2)
-print(z)"""
+
+
+def clean_data(tx):
+    #standard deviation de chaque feature
+    
+    std_data=np.std(tx,axis=0)
+    #moyenne de chaque feature
+    
+    mean_data=np.mean(tx,axis=0)
+    
+    #deux arrays qui contiennent mean-std_deviation (logiquement on devrait avoir 95% de nos données 
+    #là dedans mais là c'est en 1d du coup on en aura moins nécessairement.. 
+    mean_below_std=mean_data-std_data
+    mean_up_std=mean_data+std_data
+    
+    #deux matrices de la taille de tx qui contiennent des booléans voir si chaque élément est bien dans 
+    #le cluster. 'première au dessus, l'autre en dessous. 
+    
+    uper_std=np.less(mean_below_std,tx)   
+    lower_std=np.greater(mean_up_std,tx)
+    
+    #matrice qui contient des boolean qui indique ici si c'est dans le cluster ou pas cette fois. 
+    clustered_data=(uper_std *lower_std)
+    
+    return tx[np.all(clustered_data,axis=1),:]
+
+    
