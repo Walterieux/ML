@@ -7,6 +7,8 @@ Created on Thu Sep 24 15:47:51 2020
 import numpy as np
 from matplotlib import pyplot as plt
 from proj1_helpers import *
+import seaborn as sns
+from proj1_helpers import *
 
 def compute_loss(y, tx, w):
     """Calculate the loss.
@@ -103,11 +105,11 @@ def sorted_by_variance(tx):
 
 
 def test_find_degree(y_train,y_test,tx_train,tx_test):
-    degree1=np.arange(2,dtype=int)
-    degree2=np.arange(3,dtype=int)
-    degree3=np.linspace(1,4,4,dtype=int)
-    degree4=np.linspace(2,5,4,dtype=int)
-    degree5=np.linspace(3,6,4,dtype=int)
+    degree1=np.linspace(6,8,3,dtype=int)
+    degree2=np.linspace(6,8,3,dtype=int)
+    degree3=np.linspace(6,8,3,dtype=int)
+    degree4=np.linspace(6,8,3,dtype=int)
+    degree5=np.linspace(6,8,3,dtype=int)
     best_array=np.zeros(5,dtype=int)
     min_value=10000
     #len_degree2=len(degree2)
@@ -117,7 +119,7 @@ def test_find_degree(y_train,y_test,tx_train,tx_test):
             for k in degree3: 
                 for l in degree4: 
                     for m in degree5: 
-                        print("i : " , i , "j : ", k , "k :" ,k, "l : ", l , "m : ", m )
+                        #print("i : " , i , "j : ", k , "k :" ,k, "l : ", l , "m : ", m )
                         current_tx=build_poly_variance(tx_train, 0,i,j,k,l,m)
                         weights, loss = ridge_regression(y_train, current_tx, 0.0)
                         tx_test_poly=build_poly_variance(tx_test,0,i,j,k,l,m)
@@ -125,6 +127,8 @@ def test_find_degree(y_train,y_test,tx_train,tx_test):
                         current_val=compute_loss(y_test, tx_test_poly, weights)
                         if current_val<= min_value :
                             min_value=current_val 
+                            print("i : " , i , "j : ", k , "k :" ,k, "l : ", l , "m : ", m )
+
                             print("current_val : ", current_val)
                             best_array=np.array([i,j,k,l,m])
     return min_value,best_array             
@@ -138,22 +142,23 @@ def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5,degree4=4,
     if allparam == 0:
         params=np.array([degree1,degree2,degree3,degree4,degree5])
         nb_gr_vr = ncols // 5
-    else:
-       
-        nb_gr_vr = ncols // 10
-        params = np.array([0,0,0,2,3,3,3,3,3,3])
 
     # calcul du nombre total de colonnes, on ajoute 1 étant donné qu'on impose un terme indépendant.
-    ncol_tot = np.sum(params * nb_gr_vr)+1
+    ncol_tot = np.sum(params * nb_gr_vr)+1 +params[-1]*(ncols %5)
+    print("ncol_tot ; ", ncol_tot)
 
     newx = np.zeros((nrows, ncol_tot))
-
     current = 0
-    
-    for counter, param in enumerate(params):
+    #list_nb_gr_vr=np.full((len(params),nb_gr_vr,dtype=int)
+    #list_nb_gr_vr[-1]+=nb_gr_vr % 5
+    for counter, param in enumerate(params[:-1]):
+        #print("param :" , param)
+        #print("current : ", current)
+        #print("current + nb_gr_vr * param",current + nb_gr_vr * param)
         newx[:, current:current + nb_gr_vr * param] = build_poly(tx[:, (counter) * nb_gr_vr:(counter + 1) * nb_gr_vr],
                                                                  param)
         current = nb_gr_vr * param + current
+    newx[:,current:-1]=build_poly(tx[:,(counter+1)*nb_gr_vr:],params[-1])
     newx[:,-1]=1
     #print(newx)
     return newx
@@ -231,3 +236,65 @@ def clean_data(tx):
     clustered_data = (uper_std * lower_std)
 
     return tx[np.all(clustered_data, axis=1), :]
+
+
+def standardize(x):
+    ''' fill your code in here...
+    '''
+    centered_data = x - np.mean(x, axis=0)
+    std_data = centered_data / np.std(centered_data, axis=0)
+    
+    return std_data
+
+def replace_999_data_elem(tx):
+    return np.where(tx==-999,0,tx)
+
+"""def replace_999_data_elem(tx,tx_test): 
+    n_rows,n_cols=np.shape(tx)
+    retour=np.concatenate((tx,tx_test),axis=0)
+    print(np.shape(retour))
+    retour1=np.copy(retour)
+    retour1=standardize(retour1)
+    retour1[retour==-999]=0.0
+    retour1=standardize(retour1)
+    retour1[retour==-999]=0.0
+    
+    return retour[:n_rows,],retour[n_rows:,]"""
+    
+
+def calculateCovariance(tX,IsBinary):
+    covariance= np.cov(tX,rowvar=False,bias=True)
+    v = np.sqrt(np.diag(covariance))
+    outer_v = np.outer(v, v)
+    correlation = covariance / outer_v
+    if IsBinary:
+        return np.where(correlation>=0.9,1,0)
+        
+    correlation[covariance == 0] = 0
+    return correlation
+
+def calculateCovariance_y_tX(tX,y):
+    y_tX=np.concatenate((np.transpose([y]),tX),axis=1)
+    cov_y_tX=calculateCovariance(y_tX,1)
+    array_of_corr=np.where(cov_y_tX[:,0]==1)
+    return array_of_corr 
+def get_uncorellated_features(tX):
+    binary_covariance=calculateCovariance(tX,1)
+    n_rows,n_cols=np.shape(binary_covariance)
+    columns = np.full((n_rows,), True, dtype=bool)
+
+    for i in range(n_rows):
+        for j in range(i+1,n_rows):
+            if binary_covariance[i,j]==1:
+                if columns[j]: 
+                    columns[j]=False
+    return np.where(columns==True)[0]
+                    
+
+b=np.array([[2, 1, 3]])
+c=np.array([[2,2],[2,2],[2,2]])
+print(np.shape(b))
+print(np.shape(c))
+print(np.concatenate((np.transpose(b),c),axis=1))
+
+    
