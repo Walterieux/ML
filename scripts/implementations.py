@@ -8,7 +8,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from proj1_helpers import *
 import seaborn as sns
-from proj1_helpers import *
 
 
 def compute_loss(y, tx, w):
@@ -105,11 +104,11 @@ def sorted_by_variance(tx):
 
 
 def test_find_degree(y_train, y_test, tx_train, tx_test):
-    degree1 = np.linspace(6, 8, 3, dtype=int)
-    degree2 = np.linspace(6, 8, 3, dtype=int)
-    degree3 = np.linspace(6, 8, 3, dtype=int)
-    degree4 = np.linspace(6, 8, 3, dtype=int)
-    degree5 = np.linspace(6, 8, 3, dtype=int)
+    degree1 = np.linspace(7, 9, 3, dtype=int)
+    degree2 = np.linspace(7, 9, 3, dtype=int)
+    degree3 = np.linspace(7, 9, 3, dtype=int)
+    degree4 = np.linspace(7, 9, 3, dtype=int)
+    degree5 = np.linspace(7, 9, 3, dtype=int)
     best_array = np.zeros(5, dtype=int)
     min_value = 10000
     # len_degree2=len(degree2)
@@ -144,7 +143,6 @@ def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4
 
     # calcul du nombre total de colonnes, on ajoute 1 étant donné qu'on impose un terme indépendant.
     ncol_tot = np.sum(params * nb_gr_vr) + 1 + params[-1] * (ncols % 5)
-    print("ncol_tot ; ", ncol_tot)
 
     newx = np.zeros((nrows, ncol_tot))
     current = 0
@@ -201,9 +199,10 @@ def variance_half_max_index(tx):
     return sorted_variance[len(sorted_variance) // 5:]
 
 
-def data_train_test(y, tx, pourcentage):
+# split data in percentage to train and 1-percentage to test
+def data_train_test(y, tx, percentage):
     len_y = len(y)
-    len_test = int(pourcentage * len_y)
+    len_test = int(percentage * len_y)
     print(len_test)
     y_train = y[:len_test]
     y_test = y[len_test:]
@@ -213,15 +212,12 @@ def data_train_test(y, tx, pourcentage):
 
 
 def clean_data(tx):
-    # standard deviation de chaque feature
-
     std_data = np.std(tx, axis=0)
-    # moyenne de chaque feature
-
     mean_data = np.mean(tx, axis=0)
 
-    clustered_data = np.all(np.concatenate((mean_data - std_data < tx, tx < mean_data + std_data), axis=1), axis=1)
+    clustered_data = np.concatenate((mean_data - std_data < tx, tx < mean_data + std_data), axis=1)
 
+    # TODO remove this if useless
     """# deux arrays qui contiennent mean-std_deviation (logiquement on devrait avoir 95% de nos données
     # là dedans mais là c'est en 1d du coup on en aura moins nécessairement..
     mean_below_std = mean_data - std_data
@@ -239,22 +235,22 @@ def clean_data(tx):
     return tx[np.all(clustered_data, axis=1), :]
 
 
-def standardize(x):
+"""def standardize(x):
     ''' fill your code in here...
     '''
     centered_data = x - np.mean(x, axis=0)
     std_data = centered_data / np.std(centered_data, axis=0)
+    
+    return std_data"""
 
-    return std_data
 
-
+# change value which are equal to -999 to 0 (maybe the mean could be an idea too.. certanly a better idea)
+# !!!!! Try it !!
 def replace_999_data_elem(tx):
     return np.where(tx == -999, 0, tx)
 
 
-"""def replace_999_data_elem(tx,tx_test): 
-    n_rows,n_cols=np.shape(tx)
-    retour=np.concatenate((tx,tx_test),axis=0)
+""" retour=np.concatenate((tx,tx_test),axis=0)
     print(np.shape(retour))
     retour1=np.copy(retour)
     retour1=standardize(retour1)
@@ -265,18 +261,22 @@ def replace_999_data_elem(tx):
     return retour[:n_rows,],retour[n_rows:,]"""
 
 
-def calculateCovariance(tX, IsBinary):
+# Input: tX (data of features, isBinary(boolean) which indicates if we want values or only boolean higher than 0.9 or not
+# Output: correlation matrix, (to know: correlation matrix indicates if there is a linear link btw two features, how n
+# near from, how higher the correlation)
+def calculateCovariance(tX, isBinary):
     covariance = np.cov(tX, rowvar=False, bias=True)
     v = np.sqrt(np.diag(covariance))
     outer_v = np.outer(v, v)
     correlation = covariance / outer_v
-    if IsBinary:
+    if isBinary:
         return np.where(correlation >= 0.9, 1, 0)
-
     correlation[covariance == 0] = 0
     return correlation
 
 
+# calculation unbiased covariance matrix with y, it does not have a lot of impact it would be too easy if there was
+# linear link btw y and one  of the features
 def calculateCovariance_y_tX(tX, y):
     y_tX = np.concatenate((np.transpose([y]), tX), axis=1)
     cov_y_tX = calculateCovariance(y_tX, 1)
@@ -284,6 +284,8 @@ def calculateCovariance_y_tX(tX, y):
     return array_of_corr
 
 
+# get the features that are uncorrelated, it means it deletes the features that are too much correlated with other
+# and discard them
 def get_uncorellated_features(tX):
     binary_covariance = calculateCovariance(tX, 1)
     n_rows, n_cols = np.shape(binary_covariance)
@@ -294,11 +296,4 @@ def get_uncorellated_features(tX):
             if binary_covariance[i, j] == 1:
                 if columns[j]:
                     columns[j] = False
-    return np.where(columns == True)[0]
-
-
-b = np.array([[2, 1, 3]])
-c = np.array([[2, 2], [2, 2], [2, 2]])
-print(np.shape(b))
-print(np.shape(c))
-print(np.concatenate((np.transpose(b), c), axis=1))
+    return np.where(columns is True)[0]
