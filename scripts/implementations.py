@@ -8,7 +8,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from proj1_helpers import *
 import seaborn as sns
-from proj1_helpers import *
 
 
 def loss_classification(y,tx,w):
@@ -56,11 +55,6 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     w_toplot.append(w)
 
     for n_iter in range(max_iters):
-
-        # 1) on pourrait rajouter une autre condition ici assez simple qui regarde l'écart entre deux différents w et si jamais 
-        # la norme du gradient est petite on pourrait quitter, je mets le code en commentaire mais ça me parait le plus logique 
-        # 2) est ce qu'on adapterait notre pas en fonction de où on est ? Dans le cours il parle de peut être faire -gamma/n_iter
-
         current_gradient = compute_gradient(y, tx, w, n)
         if np.linalg.norm(current_gradient) <= 1e-6:
             break
@@ -102,72 +96,106 @@ def least_squares(y, tx):
     return w, compute_loss(y, tx, w)
 
 
-def sorted_by_variance(tx): 
-    return np.argsort(np.std(tx,axis=0))
+def ridge_regression(y, tx, lambda_):
+    x_transp = np.transpose(tx)
+
+    A = np.dot(x_transp, tx)
+    B = np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0]))
+
+    y1 = np.dot(x_transp, y)
+    w = np.linalg.solve(A + B, y1)
+
+    return w, compute_loss(y, tx, w)
 
 
+def logistic_regression(y, tx, initial_w, max_iters, gamma):
+    n = len(y)
+    w = initial_w
 
-def test_find_degree(y_train,y_test,tx_train,tx_test):
-    degree1=np.linspace(7,9,3,dtype=int)
-    degree2=np.linspace(7,9,3,dtype=int)
-    degree3=np.linspace(7,9,3,dtype=int)
-    degree4=np.linspace(7,9,3,dtype=int)
-    degree5=np.linspace(7,9,3,dtype=int)
-    best_array=np.zeros(5,dtype=int)
-    min_value=10000
-    #len_degree2=len(degree2)
-    #len_degree3=len()
-    for i in degree1: 
-        for j in degree2: 
-            for k in degree3: 
-                for l in degree4: 
-                    for m in degree5: 
-                        #print("i : " , i , "j : ", k , "k :" ,k, "l : ", l , "m : ", m )
-                        current_tx=build_poly_variance(tx_train, 0,i,j,k,l,m)
+    for n_iter in range(max_iters):
+        gradient = np.dot(np.transpose(tx), sigma(np.dot(tx, w)) - y)
+        if np.linalg.norm(gradient) <= 1e-6:
+            break
+        w = w - gamma / (n_iter + 1) * gradient
+
+    return w, compute_loss(y, tx, w)
+
+
+def sigma(x):
+    return np.exp(x) / (1 + np.exp(x))
+
+
+def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
+    # TODO
+    w = 0
+
+    return w, compute_loss(y, tx, w)
+
+
+def sorted_by_variance(tx):
+    return np.argsort(np.std(tx, axis=0))
+
+
+def test_find_degree(y_train, y_test, tx_train, tx_test):
+    degree1 = np.linspace(7, 9, 3, dtype=int)
+    degree2 = np.linspace(7, 9, 3, dtype=int)
+    degree3 = np.linspace(7, 9, 3, dtype=int)
+    degree4 = np.linspace(7, 9, 3, dtype=int)
+    degree5 = np.linspace(7, 9, 3, dtype=int)
+    best_array = np.zeros(5, dtype=int)
+    min_value = 10000
+    # len_degree2=len(degree2)
+    # len_degree3=len()
+    for i in degree1:
+        for j in degree2:
+            for k in degree3:
+                for l in degree4:
+                    for m in degree5:
+                        # print("i : " , i , "j : ", k , "k :" ,k, "l : ", l , "m : ", m )
+                        current_tx = build_poly_variance(tx_train, 0, i, j, k, l, m)
                         weights, loss = ridge_regression(y_train, current_tx, 0.0)
-                        tx_test_poly=build_poly_variance(tx_test,0,i,j,k,l,m)
-                        #y_pred = predict_labels(weights, tx_test_poly)
-                        current_val=compute_loss(y_test, tx_test_poly, weights)
-                        if current_val<= min_value :
-                            min_value=current_val 
-                            print("i : " , i , "j : ", k , "k :" ,k, "l : ", l , "m : ", m )
+                        tx_test_poly = build_poly_variance(tx_test, 0, i, j, k, l, m)
+                        # y_pred = predict_labels(weights, tx_test_poly)
+                        current_val = compute_loss(y_test, tx_test_poly, weights)
+                        if current_val <= min_value:
+                            min_value = current_val
+                            print("i : ", i, "j : ", k, "k :", k, "l : ", l, "m : ", m)
 
                             print("current_val : ", current_val)
-                            best_array=np.array([i,j,k,l,m])
-    return min_value,best_array             
-                
-    
-def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5,degree4=4,degree5=5):
+                            best_array = np.array([i, j, k, l, m])
+    return min_value, best_array
+
+
+def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4, degree5=5):
     # classification en fonction de la variance de chaque paramètre:
     nrows, ncols = np.shape(tx)
 
-
     if allparam == 0:
-        params=np.array([degree1,degree2,degree3,degree4,degree5])
+        params = np.array([degree1, degree2, degree3, degree4, degree5])
         nb_gr_vr = ncols // 5
 
     # calcul du nombre total de colonnes, on ajoute 1 étant donné qu'on impose un terme indépendant.
-    ncol_tot = np.sum(params * nb_gr_vr)+1 +params[-1]*(ncols %5)
+    ncol_tot = np.sum(params * nb_gr_vr) + 1 + params[-1] * (ncols % 5)
 
     newx = np.zeros((nrows, ncol_tot))
     current = 0
-    #list_nb_gr_vr=np.full((len(params),nb_gr_vr,dtype=int)
-    #list_nb_gr_vr[-1]+=nb_gr_vr % 5
+    # list_nb_gr_vr=np.full((len(params),nb_gr_vr,dtype=int)
+    # list_nb_gr_vr[-1]+=nb_gr_vr % 5
     for counter, param in enumerate(params[:-1]):
-        #print("param :" , param)
-        #print("current : ", current)
-        #print("current + nb_gr_vr * param",current + nb_gr_vr * param)
+        # print("param :" , param)
+        # print("current : ", current)
+        # print("current + nb_gr_vr * param",current + nb_gr_vr * param)
         newx[:, current:current + nb_gr_vr * param] = build_poly(tx[:, (counter) * nb_gr_vr:(counter + 1) * nb_gr_vr],
                                                                  param)
         current = nb_gr_vr * param + current
-    newx[:,current:-1]=build_poly(tx[:,(counter+1)*nb_gr_vr:],params[-1])
-    newx[:,-1]=1
-    #print(newx)
+    newx[:, current:-1] = build_poly(tx[:, (counter + 1) * nb_gr_vr:], params[-1])
+    newx[:, -1] = 1
+    # print(newx)
     return newx
 
 
 def build_poly(x, degree):
-    """polynomial basis functions for input data x, for j=0 up to j=degree."""
+    """polynomial basis functions for input data x, for j=1 up to j=degree."""
     x_flat = np.ndarray.flatten(x)  # ça va juste reshape une array en 1d array.
 
     rows, cols = np.indices((x_flat.shape[0], degree))  #
@@ -178,81 +206,43 @@ def build_poly(x, degree):
     return res
 
 
-def ridge_regression(y, tx, lambda_):
-    x_transp = np.transpose(tx)
-
-    A = np.dot(x_transp, tx)
-
-    B = np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0]))
-
-    y1 = np.dot(x_transp, y)
-
-    w = np.linalg.solve(A + B, y1)
-
-    return w, compute_loss(y, tx, w)
-
-
-def least_square(y, tx):
-    X_transp = np.transpose(tx)
-
-    w = np.linalg.solve(np.dot(X_transp, tx), np.dot(X_transp, y))
-    return w, compute_loss(y, tx, w)
-
-
 def variance_half_max_index(tx):
     sorted_variance = np.argsort(np.std(tx, axis=0))
     return sorted_variance[len(sorted_variance) // 5:]
 
 
-#split data in pourcentage to train et 1-pourcentage to test
-def data_train_test(y,tx,pourcentage):
-    len_y=len(y)
-    len_test=int(pourcentage *len_y)
+# split data in percentage to train and 1-percentage to test
+def data_train_test(y, tx, percentage):
+    len_y = len(y)
+    len_test = int(percentage * len_y)
     print(len_test)
-    y_train=y[:len_test]
-    y_test=y[len_test:]
-    tx_train=tx[:len_test,]
-    tx_test=tx[len_test:,]
-    return y_train,y_test,tx_train,tx_test
-    
+    y_train = y[:len_test]
+    y_test = y[len_test:]
+    tx_train = tx[:len_test, ]
+    tx_test = tx[len_test:, ]
+    return y_train, y_test, tx_train, tx_test
+
+
 def clean_data(tx):
-    # standard deviation de chaque feature
-
     std_data = np.std(tx, axis=0)
-    # moyenne de chaque feature
-
     mean_data = np.mean(tx, axis=0)
 
-    # deux arrays qui contiennent mean-std_deviation (logiquement on devrait avoir 95% de nos données
-    # là dedans mais là c'est en 1d du coup on en aura moins nécessairement..
-    mean_below_std = mean_data - std_data
-    mean_up_std = mean_data + std_data
-
-    # deux matrices de la taille de tx qui contiennent des booléans voir si chaque élément est bien dans
-    # le cluster. 'première au dessus, l'autre en dessous.
-
-    uper_std = np.less(mean_below_std, tx)
-    lower_std = np.greater(mean_up_std, tx)
-
-    # matrice qui contient des boolean qui indique ici si c'est dans le cluster ou pas cette fois.
-    clustered_data = (uper_std * lower_std)
+    clustered_data = np.concatenate((mean_data - std_data < tx, tx < mean_data + std_data), axis=1)
 
     return tx[np.all(clustered_data, axis=1), :]
 
 
 """def standardize(x):
-    ''' fill your code in here...
-    '''
     centered_data = x - np.mean(x, axis=0)
     std_data = centered_data / np.std(centered_data, axis=0)
     
     return std_data"""
 
-#change value which are equal to -999 to 0 (maybe the mean could be an idea too.. certanly a better idea)
-#!!!!! Try it !! 
-def replace_999_data_elem(tx):
-    return np.where(tx==-999,0,tx)
 
+# change value which are equal to -999 to 0 TODO (maybe the mean could be an idea too.. certanly a better idea)
+# !!!!! Try it !!
+def replace_999_data_elem(tx):
+    return np.where(tx == -999, 0, tx)
 
 
 """ retour=np.concatenate((tx,tx_test),axis=0)
@@ -264,41 +254,41 @@ def replace_999_data_elem(tx):
     retour1[retour==-999]=0.0
     
     return retour[:n_rows,],retour[n_rows:,]"""
-    
-#Input: tX (data of features, isBinary(boolean) which indicates if we want values or only boolean higher than 0.9 or not
-#Output: correlation matrix, (to know: correlation matrix indicates if there is a linear link btw two features, how n
-#near from, how higher the correlation)
-def calculateCovariance(tX,IsBinary):
-    covariance= np.cov(tX,rowvar=False,bias=True)
+
+
+# Input: tX (data of features, isBinary(boolean) which indicates if we want values or only boolean higher than 0.9 or not
+# Output: correlation matrix, (to know: correlation matrix indicates if there is a linear link btw two features, how n
+#         near from, how higher the correlation)
+def calculateCovariance(tX, isBinary):
+    covariance = np.cov(tX, rowvar=False, bias=True)
     v = np.sqrt(np.diag(covariance))
     outer_v = np.outer(v, v)
     correlation = covariance / outer_v
-    if IsBinary:
-        return np.where(correlation>=0.9,1,0)
+    if isBinary:
+        return np.where(correlation >= 0.9, 1, 0)
     correlation[covariance == 0] = 0
     return correlation
 
-#calculation unbiased covariance matrix with y, it does not have a lot of impact it would be too easy if there was linear 
-#link btw y and one  of the features
-def calculateCovariance_y_tX(tX,y):
-    y_tX=np.concatenate((np.transpose([y]),tX),axis=1)
-    cov_y_tX=calculateCovariance(y_tX,1)
-    array_of_corr=np.where(cov_y_tX[:,0]==1)
-    return array_of_corr 
-#get the features that are uncorrelated, it means it deletes the feautres that are too much correlated with other and discard
-#them
+
+# calculation unbiased covariance matrix with y, it does not have a lot of impact it would be too easy if there was
+# linear link btw y and one  of the features
+def calculateCovariance_y_tX(tX, y):
+    y_tX = np.concatenate((np.transpose([y]), tX), axis=1)
+    cov_y_tX = calculateCovariance(y_tX, 1)
+    array_of_corr = np.where(cov_y_tX[:, 0] == 1)
+    return array_of_corr
+
+
+# get the features that are uncorrelated, it means it deletes the features that are too much correlated with other
+# and discard them
 def get_uncorellated_features(tX):
-    binary_covariance=calculateCovariance(tX,1)
-    n_rows,n_cols=np.shape(binary_covariance)
+    binary_covariance = calculateCovariance(tX, 1)
+    n_rows, n_cols = np.shape(binary_covariance)
     columns = np.full((n_rows,), True, dtype=bool)
 
     for i in range(n_rows):
-        for j in range(i+1,n_rows):
-            if binary_covariance[i,j]==1:
-                if columns[j]: 
-                    columns[j]=False
-    return np.where(columns==True)[0]
-                    
-
-
-    
+        for j in range(i + 1, n_rows):
+            if binary_covariance[i, j] == 1:
+                if columns[j]:
+                    columns[j] = False
+    return np.where(columns is True)[0]
