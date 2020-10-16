@@ -11,6 +11,8 @@ import seaborn as sns
 from proj1_helpers import *
 
 
+def loss_classification(y,tx,w):
+    
 def compute_loss(y, tx, w):
     """Calculate the loss.
     You can calculate the loss using mse or mae.
