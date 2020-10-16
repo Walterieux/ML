@@ -111,7 +111,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     w = initial_w
 
     for n_iter in range(max_iters):
-        gradient = np.dot(np.transpose(tx), sigma(np.dot(tx, w) - y))
+        gradient = np.dot(np.transpose(tx), sigma(np.dot(tx, w)) - y)
         if np.linalg.norm(gradient) <= 1e-6:
             break
         w = w - gamma / (n_iter + 1) * gradient
