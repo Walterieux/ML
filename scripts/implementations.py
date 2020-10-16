@@ -53,11 +53,6 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     w_toplot.append(w)
 
     for n_iter in range(max_iters):
-
-        # 1) on pourrait rajouter une autre condition ici assez simple qui regarde l'écart entre deux différents w et si jamais 
-        # la norme du gradient est petite on pourrait quitter, je mets le code en commentaire mais ça me parait le plus logique 
-        # 2) est ce qu'on adapterait notre pas en fonction de où on est ? Dans le cours il parle de peut être faire -gamma/n_iter
-
         current_gradient = compute_gradient(y, tx, w, n)
         if np.linalg.norm(current_gradient) <= 1e-6:
             break
@@ -96,6 +91,42 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 def least_squares(y, tx):
     x_transp = np.transpose(tx)
     w = np.linalg.solve(np.dot(x_transp, tx), np.dot(x_transp, y))
+    return w, compute_loss(y, tx, w)
+
+
+def ridge_regression(y, tx, lambda_):
+    x_transp = np.transpose(tx)
+
+    A = np.dot(x_transp, tx)
+    B = np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0]))
+
+    y1 = np.dot(x_transp, y)
+    w = np.linalg.solve(A + B, y1)
+
+    return w, compute_loss(y, tx, w)
+
+
+def logistic_regression(y, tx, initial_w, max_iters, gamma):
+    n = len(y)
+    w = initial_w
+
+    for n_iter in range(max_iters):
+        gradient = np.dot(np.transpose(tx), sigma(np.dot(tx, w) - y))
+        if np.linalg.norm(gradient) <= 1e-6:
+            break
+        w = w - gamma / (n_iter + 1) * gradient
+
+    return w, compute_loss(y, tx, w)
+
+
+def sigma(x):
+    return np.exp(x) / (1 + np.exp(x))
+
+
+def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
+    # TODO
+    w = 0
+
     return w, compute_loss(y, tx, w)
 
 
@@ -162,7 +193,7 @@ def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4
 
 
 def build_poly(x, degree):
-    """polynomial basis functions for input data x, for j=0 up to j=degree."""
+    """polynomial basis functions for input data x, for j=1 up to j=degree."""
     x_flat = np.ndarray.flatten(x)  # ça va juste reshape une array en 1d array.
 
     rows, cols = np.indices((x_flat.shape[0], degree))  #
@@ -171,27 +202,6 @@ def build_poly(x, degree):
     res[rows, cols] = res[rows, cols] ** (cols + 1)  # mise à l'exposant.
     res = np.reshape(res, (x.shape[0], -1), 'A')
     return res
-
-
-def ridge_regression(y, tx, lambda_):
-    x_transp = np.transpose(tx)
-
-    A = np.dot(x_transp, tx)
-
-    B = np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0]))
-
-    y1 = np.dot(x_transp, y)
-
-    w = np.linalg.solve(A + B, y1)
-
-    return w, compute_loss(y, tx, w)
-
-
-def least_square(y, tx):
-    X_transp = np.transpose(tx)
-
-    w = np.linalg.solve(np.dot(X_transp, tx), np.dot(X_transp, y))
-    return w, compute_loss(y, tx, w)
 
 
 def variance_half_max_index(tx):
@@ -217,34 +227,17 @@ def clean_data(tx):
 
     clustered_data = np.concatenate((mean_data - std_data < tx, tx < mean_data + std_data), axis=1)
 
-    # TODO remove this if useless
-    """# deux arrays qui contiennent mean-std_deviation (logiquement on devrait avoir 95% de nos données
-    # là dedans mais là c'est en 1d du coup on en aura moins nécessairement..
-    mean_below_std = mean_data - std_data
-    mean_up_std = mean_data + std_data
-
-    # deux matrices de la taille de tx qui contiennent des booléans voir si chaque élément est bien dans
-    # le cluster. 'première au dessus, l'autre en dessous.
-
-    uper_std = np.less(mean_below_std, tx)
-    lower_std = np.greater(mean_up_std, tx)
-
-    # matrice qui contient des boolean qui indique ici si c'est dans le cluster ou pas cette fois.
-    clustered_data = (uper_std * lower_std)"""
-
     return tx[np.all(clustered_data, axis=1), :]
 
 
 """def standardize(x):
-    ''' fill your code in here...
-    '''
     centered_data = x - np.mean(x, axis=0)
     std_data = centered_data / np.std(centered_data, axis=0)
     
     return std_data"""
 
 
-# change value which are equal to -999 to 0 (maybe the mean could be an idea too.. certanly a better idea)
+# change value which are equal to -999 to 0 TODO (maybe the mean could be an idea too.. certanly a better idea)
 # !!!!! Try it !!
 def replace_999_data_elem(tx):
     return np.where(tx == -999, 0, tx)
@@ -263,7 +256,7 @@ def replace_999_data_elem(tx):
 
 # Input: tX (data of features, isBinary(boolean) which indicates if we want values or only boolean higher than 0.9 or not
 # Output: correlation matrix, (to know: correlation matrix indicates if there is a linear link btw two features, how n
-# near from, how higher the correlation)
+#         near from, how higher the correlation)
 def calculateCovariance(tX, isBinary):
     covariance = np.cov(tX, rowvar=False, bias=True)
     v = np.sqrt(np.diag(covariance))
