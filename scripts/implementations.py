@@ -107,7 +107,25 @@ def ridge_regression(y, tx, lambda_):
 
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
-    n = len(y)
+    w = initial_w
+
+    for n_iter in range(max_iters):
+        s = sigma(np.dot(tx, w) - y)
+        # nan is an overflow => can be replaced by the function's value at infinity, namely 1
+        s = np.where(np.isnan(s), 1, s)
+        gradient = np.dot(np.transpose(tx), s)
+        if np.linalg.norm(gradient) <= 1e-6 :
+            break
+        w = w - (gamma / (n_iter + 1) * gradient)
+
+    return w, compute_loss(y, tx, w)
+
+
+def sigma(x):
+    return np.exp(x) / (1.0 + np.exp(x))
+
+
+def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     w = initial_w
 
     for n_iter in range(max_iters):
@@ -115,17 +133,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         if np.linalg.norm(gradient) <= 1e-6:
             break
         w = w - gamma / (n_iter + 1) * gradient
-
-    return w, compute_loss(y, tx, w)
-
-
-def sigma(x):
-    return np.exp(x) / (1 + np.exp(x))
-
-
-def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
-    # TODO
-    w = 0
+        w = w + lambda_ * np.linalg.norm(w) ** 2
 
     return w, compute_loss(y, tx, w)
 
