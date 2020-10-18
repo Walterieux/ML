@@ -50,7 +50,7 @@ ax1.spines['top'].set_visible(False)
 print("shape of tX : ", np.shape(tX_1), "  and shape of tX_test", np.shape(tX_test))
 
 # creation of segmentation train and train_test 90% / 10%
-y_train, y_train_test, tx_train, tx_train_test = data_train_test(y, tX_1, 0.90)
+y_train, y_train_test, tx_train, tx_train_test = split_data_train_test(y, tX_1, 0.90)
 
 # calculate of the weights with the train part
 # tx_train_poly=build_poly(tx_train,5)
