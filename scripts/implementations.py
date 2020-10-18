@@ -147,6 +147,7 @@ def sigma(x):
     return np.exp(x) / (1.0 + np.exp(x))
 
 
+# TODO : check if correct
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Regularized logistic regression using gradient descent"""
     w = initial_w
@@ -309,12 +310,12 @@ def calculateCovariance_y_tX(tX, y):
     return array_of_corr
 
 
-def get_uncorellated_features(tX):
+def get_uncorrelated_features(tX):
     """
     Get the features that are uncorrelated, it means it deletes the features that are too much correlated with other
     and discard them
     """
-    binary_covariance = calculateCovariance(tX, 1)
+    binary_covariance = calculateCovariance(tX, True)
     n_rows, n_cols = np.shape(binary_covariance)
     columns = np.full((n_rows,), True, dtype=bool)
 

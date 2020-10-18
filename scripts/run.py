@@ -18,7 +18,7 @@ print("shape tx :", np.shape(tX), " and shape tx_test", np.shape(tX_test1))
 
 # tX_1,tX_test=replace_999_data_elem(tX,tX_test1)
 tX_1 = replace_999_data_elem(tX)
-features = get_uncorellated_features(tX_1)
+features = get_uncorrelated_features(tX_1)
 tX_test = replace_999_data_elem(tX_test1)
 print(features)
 #### on prend que les features importants pas ceux qui sont correlés à plus de 90% avec les autres
