@@ -46,22 +46,22 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
 
     # Define parameters to store w and loss
     w = initial_w
-    w_toplot = []
-    w_toplot.append(w)
+    w_to_plot = []
+    w_to_plot.append(w)
 
     for n_iter in range(max_iters):
         current_gradient = compute_gradient(y, tx, w)
         if np.linalg.norm(current_gradient) <= 1e-6:
             break
         w = w - gamma / (n_iter + 1) * compute_gradient(y, tx, w)
-        w_toplot.append(w)
+        w_to_plot.append(w)
 
-    toplot = np.zeros((max_iters, 1))
+    to_plot = np.zeros((max_iters, 1))
     for i in range(max_iters):
-        toplot[i] = compute_loss(y, tx, w_toplot[i])
-    print(toplot)
-    plt.plot(np.linspace(1, max_iters, max_iters), toplot)
-    plt.scatter(np.linspace(1, max_iters, max_iters), toplot)
+        to_plot[i] = compute_loss(y, tx, w_to_plot[i])
+    print(to_plot)
+    plt.plot(np.linspace(1, max_iters, max_iters), to_plot)
+    plt.scatter(np.linspace(1, max_iters, max_iters), to_plot)
     plt.title("Error in term of number of iterations")
     plt.xlabel("number of iterations")
     plt.ylabel("Error")
@@ -89,20 +89,20 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 def least_squares(y, tx):
     """Least squares regression using normal equations"""
 
-    x_transp = np.transpose(tx)
-    w = np.linalg.solve(np.dot(x_transp, tx), np.dot(x_transp, y))
+    x_trans = np.transpose(tx)
+    w = np.linalg.solve(np.dot(x_trans, tx), np.dot(x_trans, y))
     return w, compute_loss(y, tx, w)
 
 
 def ridge_regression(y, tx, lambda_):
     """Ridge regression using normal equations"""
 
-    x_transp = np.transpose(tx)
+    x_trans = np.transpose(tx)
 
-    A = np.dot(x_transp, tx)
-    B = np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0]))
+    A = np.dot(x_trans, tx)
+    B = np.dot(lambda_ * 2 * len(y), np.identity(x_trans.shape[0]))
 
-    y1 = np.dot(x_transp, y)
+    y1 = np.dot(x_trans, y)
     w = np.linalg.solve(A + B, y1)
 
     return w, compute_loss(y, tx, w)
@@ -188,7 +188,7 @@ def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4
         # print("param :" , param)
         # print("current : ", current)
         # print("current + nb_gr_vr * param",current + nb_gr_vr * param)
-        newx[:, current:current + nb_gr_vr * param] = build_poly(tx[:, (counter) * nb_gr_vr:(counter + 1) * nb_gr_vr],
+        newx[:, current:current + nb_gr_vr * param] = build_poly(tx[:, counter * nb_gr_vr:(counter + 1) * nb_gr_vr],
                                                                  param)
         current = nb_gr_vr * param + current
     newx[:, current:-1] = build_poly(tx[:, (counter + 1) * nb_gr_vr:], params[-1])
@@ -229,7 +229,7 @@ def split_data_train_test(y, tx, percentage):
 
 def clean_data(tx):
     """Remove lines which contain an element outside [mean - std, mean + std]
-    with mean: the mean of the column (feature) and std: the standart deviation of the column (feature)"""
+    with mean: the mean of the column (feature) and std: the standard deviation of the column (feature)"""
     std_data = np.std(tx, axis=0)
     mean_data = np.mean(tx, axis=0)
 
