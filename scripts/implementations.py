@@ -10,7 +10,16 @@ from proj1_helpers import *
 import seaborn as sns
 
 
-def loss_classification(y,tx,w):
+#def loss_classification(y,tx,w):
+    
+
+def compute_loss_binary(y_test,tx_test,w_train):
+    #y=np.where(y_test==-1,0,1)
+    y=y_test
+    predicted_y=np.dot(tx_test,w_train)
+    predicted_y=np.where(predicted_y>0,1,-1)
+    sum_y=predicted_y-y
+    return (1-np.count_nonzero(sum_y)/len(sum_y))
     
 def compute_loss(y, tx, w):
     """Calculate the loss.
@@ -87,8 +96,6 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
             break
         w = w - gamma * subgradient
 
-    return w, compute_loss(y, tx, w)
-
 
 def least_squares(y, tx):
     x_transp = np.transpose(tx)
@@ -104,25 +111,30 @@ def ridge_regression(y, tx, lambda_):
 
     y1 = np.dot(x_transp, y)
     w = np.linalg.solve(A + B, y1)
-
+    
     return w, compute_loss(y, tx, w)
 
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     n = len(y)
     w = initial_w
-
+    print("shape de transpose tx : " , np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ", np.shape(sigma(np.dot(tx,w))))
+    
     for n_iter in range(max_iters):
         gradient = np.dot(np.transpose(tx), sigma(np.dot(tx, w)) - y)
         if np.linalg.norm(gradient) <= 1e-6:
             break
         w = w - gamma / (n_iter + 1) * gradient
-
+    print("n_iter : ",n_iter)
     return w, compute_loss(y, tx, w)
 
 
 def sigma(x):
-    return np.exp(x) / (1 + np.exp(x))
+    sigma_output= np.exp(x) / (1 + np.exp(x))
+    
+    sigma_output[np.isnan(sigma_output)]=1
+    
+    return sigma_output
 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
@@ -215,7 +227,6 @@ def variance_half_max_index(tx):
 def data_train_test(y, tx, percentage):
     len_y = len(y)
     len_test = int(percentage * len_y)
-    print(len_test)
     y_train = y[:len_test]
     y_test = y[len_test:]
     tx_train = tx[:len_test, ]
@@ -242,7 +253,11 @@ def clean_data(tx):
 # change value which are equal to -999 to 0 TODO (maybe the mean could be an idea too.. certanly a better idea)
 # !!!!! Try it !!
 def replace_999_data_elem(tx):
-    return np.where(tx == -999, 0, tx)
+    rows,cols=np.shape(tx)
+    mean_values_matrix=np.zeros((rows,cols))
+    for i in range(cols):
+        mean_values_matrix[:,i]=np.mean(tx[tx[:,i]!=-999,i])
+    return np.where(tx == -999, mean_values_matrix, tx)
 
 
 """ retour=np.concatenate((tx,tx_test),axis=0)
@@ -291,4 +306,19 @@ def get_uncorellated_features(tX):
             if binary_covariance[i, j] == 1:
                 if columns[j]:
                     columns[j] = False
-    return np.where(columns is True)[0]
+    return np.where(columns==True)[0]
+
+
+def test_fct(tX,y,lambda_,i):
+    tX_1=replace_999_data_elem(tX)
+    features=get_uncorellated_features(tX_1)
+    tX_1=tX_1[:,features]
+    #creation of segmentation train and train_test 90% / 10%
+    y_train,y_train_test,tx_train,tx_train_test=data_train_test(y,tX_1,0.90)
+    #calculate of the weights with the train part 
+    #tx_train_poly=build_poly(tx_train,5)
+    tX_train_poly=build_poly_variance(tx_train,0,i,i,i,i,i)
+    weights, loss = ridge_regression(y_train, tX_train_poly, lambda_)
+    tX_train_test_poly=build_poly_variance(tx_train_test,0,i,i,i,i,i)
+    print("Test: Real  accuracy = ", compute_loss_binary(y_train_test,tX_train_test_poly,weights))
+    return compute_loss_binary(y_train_test,tX_train_test_poly,weights)
