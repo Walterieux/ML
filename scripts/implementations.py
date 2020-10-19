@@ -15,11 +15,12 @@ from proj1_helpers import *
 #def loss_classification(y,tx,w):
     
 
-def compute_loss_binary(y_test,tx_test,w_train):
-    #y=np.where(y_test==-1,0,1)
-    y=y_test
+def compute_loss_binary(y_test,tx_test,w_train): 
+    y=np.where(y_test==-1,0,1)
+    #y=y_test
     predicted_y=np.dot(tx_test,w_train)
-    predicted_y=np.where(predicted_y>0,1,-1)
+    #predicted_y=np.where(predicted_y>0,1,-1)
+    predicted_y=np.where(predicted_y>0.5,1,0)
     sum_y=predicted_y-y
     return (1-np.count_nonzero(sum_y)/len(sum_y))
     
@@ -142,10 +143,11 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     print("shape de transpose tx : " , np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ", np.shape(sigma(np.dot(tx,w))))
     
     for n_iter in range(max_iters):
-        s = sigma(np.dot(tx, w) - y)
+        s_sigma= sigma(np.dot(tx, w))
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
-        s = np.where(np.isnan(s), 1, s)
-        gradient = np.dot(np.transpose(tx), s)
+        s_sigma= np.where(np.isnan(s_sigma), 1, s_sigma)
+        gradient = np.dot(np.transpose(tx), s_sigma-y)
+        print(n_iter)
         if np.linalg.norm(gradient) <= 1e-6 :
             break
         w = w - gamma / (n_iter + 1) * gradient
@@ -153,14 +155,41 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 
     return w, compute_loss(y, tx, w)
 
+def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
+    """Logistic regression using gradient descent"""
+    w = initial_w
+    print("shape de transpose tx : " , np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ", np.shape(sigma(np.dot(tx,w))))
+    
+    for n_iter in range(max_iters):
+        s_sigma= sigma(np.dot(tx, w))
+        # nan is an overflow => can be replaced by the function's value at infinity, namely 1
+        s_sigma= np.where(np.isnan(s_sigma), 1, s_sigma)
+        
+        gradient = np.dot(np.transpose(tx), s_sigma-y)
+        
+        if np.linalg.norm(gradient) <= 1e-6 :
+            break
+        w = w - gamma / (n_iter + 1) * np.dot(inverse_hessian(s_sigma,tx), gradient)
+    print("n_iter : ",n_iter)
+
+    return w, compute_loss(y, tx, w)
 
 def sigma(x):
 
     sigma_output= np.exp(x) / (1 + np.exp(x))
     
+    # nan is an overflow => can be replaced by the function's value at infinity, namely 1
+
     sigma_output[np.isnan(sigma_output)]=1
     
     return sigma_output
+
+def inverse_hessian(s_sigma,tX):
+    n_row,n_col=np.size(tX)
+    S=np.dot(np.eye( n_row ), s_sigma*(1-s_sigma) )
+    return np.linalg.inv( np.dot( np.dot( np.transpose( tX) , S), tX ) )
+    #S=np.dot(sigma(np.dot(np.tranpose(tX),w)),np.eye(n_row)-
+    
 
 
 
@@ -185,36 +214,6 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
 def sorted_by_variance(tx):
     return np.argsort(np.std(tx, axis=0))
-
-
-def test_find_degree(y_train, y_test, tx_train, tx_test):
-    degree1 = np.linspace(7, 9, 3, dtype=int)
-    degree2 = np.linspace(7, 9, 3, dtype=int)
-    degree3 = np.linspace(7, 9, 3, dtype=int)
-    degree4 = np.linspace(7, 9, 3, dtype=int)
-    degree5 = np.linspace(7, 9, 3, dtype=int)
-    best_array = np.zeros(5, dtype=int)
-    min_value = 10000
-    # len_degree2=len(degree2)
-    # len_degree3=len()
-    for i in degree1:
-        for j in degree2:
-            for k in degree3:
-                for l in degree4:
-                    for m in degree5:
-                        # print("i : " , i , "j : ", k , "k :" ,k, "l : ", l , "m : ", m )
-                        current_tx = build_poly_variance(tx_train, 0, i, j, k, l, m)
-                        weights, loss = ridge_regression(y_train, current_tx, 0.0)
-                        tx_test_poly = build_poly_variance(tx_test, 0, i, j, k, l, m)
-                        # y_pred = predict_labels(weights, tx_test_poly)
-                        current_val = compute_loss(y_test, tx_test_poly, weights)
-                        if current_val <= min_value:
-                            min_value = current_val
-                            print("i : ", i, "j : ", k, "k :", k, "l : ", l, "m : ", m)
-
-                            print("current_val : ", current_val)
-                            best_array = np.array([i, j, k, l, m])
-    return min_value, best_array
 
 
 def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4, degree5=5):
@@ -361,3 +360,6 @@ def test_fct(tX,y,lambda_,i):
     tX_train_test_poly=build_poly_variance(tx_train_test,0,i,i,i,i,i)
     print("Test: Real  accuracy = ", compute_loss_binary(y_train_test,tX_train_test_poly,weights))
     return compute_loss_binary(y_train_test,tX_train_test_poly,weights)
+
+b=np.array([2,2])
+c=np.array([3,2])
