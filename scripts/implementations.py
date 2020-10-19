@@ -5,9 +5,11 @@ Created on Thu Sep 24 15:47:51 2020
 @author: jeang
 """
 import numpy as np
+# TODO remove: only numpy is allowed
 from matplotlib import pyplot as plt
-from proj1_helpers import *
 import seaborn as sns
+
+from proj1_helpers import *
 
 
 #def loss_classification(y,tx,w):
@@ -22,60 +24,55 @@ def compute_loss_binary(y_test,tx_test,w_train):
     return (1-np.count_nonzero(sum_y)/len(sum_y))
     
 def compute_loss(y, tx, w):
-    """Calculate the loss.
-    You can calculate the loss using mse or mae.
-    For this we will calculate MSE
-    """
+    """Calculate the loss using mean squared error (MSE)"""
 
-    total = 0.5 * np.mean(np.square(y - np.dot(tx, w)))
-    return total
+    return 0.5 * np.mean(np.square(y - np.dot(tx, w)))
 
 
 def compute_loss_MAE(y, tx, w):
-    total = np.mean(np.abs(y - np.dot(tx, w)))
-    return total
+    """Calculate the loss using mean absolute error (MAE)"""
 
-    # ***************************************************
-    # INSERT YOUR CODE HERE
-    # TODO: compute loss by MSE / MAE
-    # ***************************************************
+    return np.mean(np.abs(y - np.dot(tx, w)))
 
 
-def compute_gradient(y, tx, w, N):
+def compute_gradient(y, tx, w):
+    """Calculate the gradient"""
+
     # basically we have gradient L(w) = -1/N X^Te where e=(y-Xw)
-    gradient = -1 / N * np.dot(np.transpose(tx), y - np.dot(tx, w))
+    gradient = -1 / len(y) * np.dot(np.transpose(tx), y - np.dot(tx, w))
     return gradient
 
 
-def compute_gradient_MAE(y, tx, w, N):
+def compute_gradient_MAE(y, tx, w):
+    """Calculate the gradient using mean absolute error MAE"""
+
     # on a 1/N sum_1^N |y-x^_ntw|
     # donc le gradient ça devrait être -1/N * X^T sign(y-x^t_nw)
-    gradient = -1 / N * np.dot(np.transpose(tx), np.sign(y - np.dot(tx, w)))
+    gradient = -1 / len(y) * np.dot(np.transpose(tx), np.sign(y - np.dot(tx, w)))
     return gradient
 
 
 def least_squares_GD(y, tx, initial_w, max_iters, gamma):
-    """Gradient descent algorithm."""
+    """Linear regression using gradient descent algorithm"""
+
     # Define parameters to store w and loss
-    n = len(y)
-    print("max_iters = " + repr(max_iters))
     w = initial_w
-    w_toplot = []
-    w_toplot.append(w)
+    w_to_plot = []
+    w_to_plot.append(w)
 
     for n_iter in range(max_iters):
-        current_gradient = compute_gradient(y, tx, w, n)
+        current_gradient = compute_gradient(y, tx, w)
         if np.linalg.norm(current_gradient) <= 1e-6:
             break
-        w = w - gamma / (n_iter + 1) * compute_gradient(y, tx, w, n)
-        w_toplot.append(w)
+        w = w - gamma / (n_iter + 1) * compute_gradient(y, tx, w)
+        w_to_plot.append(w)
 
-    toplot = np.zeros((max_iters, 1))
+    to_plot = np.zeros((max_iters, 1))
     for i in range(max_iters):
-        toplot[i] = compute_loss(y, tx, w_toplot[i])
-    print(toplot)
-    plt.plot(np.linspace(1, max_iters, max_iters), toplot)
-    plt.scatter(np.linspace(1, max_iters, max_iters), toplot)
+        to_plot[i] = compute_loss(y, tx, w_to_plot[i])
+    print(to_plot)
+    plt.plot(np.linspace(1, max_iters, max_iters), to_plot)
+    plt.scatter(np.linspace(1, max_iters, max_iters), to_plot)
     plt.title("Error in term of number of iterations")
     plt.xlabel("number of iterations")
     plt.ylabel("Error")
@@ -85,8 +82,9 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
 
 
 def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
-    n = len(y)
+    """Linear regression using stochastic gradient descent algorithm"""
 
+    n = len(y)
     rnd_sample = np.random.random_integers(0, n - 1, max_iters)
 
     w = initial_w
@@ -98,38 +96,48 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 
 
 def least_squares(y, tx):
-    x_transp = np.transpose(tx)
-    w = np.linalg.solve(np.dot(x_transp, tx), np.dot(x_transp, y))
+    """Least squares regression using normal equations"""
+
+    x_trans = np.transpose(tx)
+    w = np.linalg.solve(np.dot(x_trans, tx), np.dot(x_trans, y))
     return w, compute_loss(y, tx, w)
 
 
 def ridge_regression(y, tx, lambda_):
-    x_transp = np.transpose(tx)
+    """Ridge regression using normal equations"""
 
-    A = np.dot(x_transp, tx)
-    B = np.dot(lambda_ * 2 * len(y), np.identity(x_transp.shape[0]))
+    x_trans = np.transpose(tx)
 
-    y1 = np.dot(x_transp, y)
+    A = np.dot(x_trans, tx)
+    B = np.dot(lambda_ * 2 * len(y), np.identity(x_trans.shape[0]))
+
+    y1 = np.dot(x_trans, y)
     w = np.linalg.solve(A + B, y1)
     
     return w, compute_loss(y, tx, w)
 
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
-    n = len(y)
+    """Logistic regression using gradient descent"""
+
     w = initial_w
     print("shape de transpose tx : " , np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ", np.shape(sigma(np.dot(tx,w))))
     
     for n_iter in range(max_iters):
-        gradient = np.dot(np.transpose(tx), sigma(np.dot(tx, w)) - y)
-        if np.linalg.norm(gradient) <= 1e-6:
+        s = sigma(np.dot(tx, w) - y)
+        # nan is an overflow => can be replaced by the function's value at infinity, namely 1
+        s = np.where(np.isnan(s), 1, s)
+        gradient = np.dot(np.transpose(tx), s)
+        if np.linalg.norm(gradient) <= 1e-6 :
             break
         w = w - gamma / (n_iter + 1) * gradient
     print("n_iter : ",n_iter)
+
     return w, compute_loss(y, tx, w)
 
 
 def sigma(x):
+
     sigma_output= np.exp(x) / (1 + np.exp(x))
     
     sigma_output[np.isnan(sigma_output)]=1
@@ -137,9 +145,18 @@ def sigma(x):
     return sigma_output
 
 
+
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
-    # TODO
-    w = 0
+    """Regularized logistic regression using gradient descent"""
+    
+    w = initial_w
+
+    for n_iter in range(max_iters):
+        gradient = np.dot(np.transpose(tx), sigma(np.dot(tx, w)) - y)
+        if np.linalg.norm(gradient) <= 1e-6:
+            break
+        w = w - gamma / (n_iter + 1) * gradient
+        w = w + lambda_ * np.linalg.norm(w) ** 2
 
     return w, compute_loss(y, tx, w)
 
@@ -197,7 +214,7 @@ def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4
         # print("param :" , param)
         # print("current : ", current)
         # print("current + nb_gr_vr * param",current + nb_gr_vr * param)
-        newx[:, current:current + nb_gr_vr * param] = build_poly(tx[:, (counter) * nb_gr_vr:(counter + 1) * nb_gr_vr],
+        newx[:, current:current + nb_gr_vr * param] = build_poly(tx[:, counter * nb_gr_vr:(counter + 1) * nb_gr_vr],
                                                                  param)
         current = nb_gr_vr * param + current
     newx[:, current:-1] = build_poly(tx[:, (counter + 1) * nb_gr_vr:], params[-1])
@@ -207,24 +224,25 @@ def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4
 
 
 def build_poly(x, degree):
-    """polynomial basis functions for input data x, for j=1 up to j=degree."""
-    x_flat = np.ndarray.flatten(x)  # ça va juste reshape une array en 1d array.
+    """polynomial basis functions for input data x, for j=1 up to j=degree"""
 
-    rows, cols = np.indices((x_flat.shape[0], degree))  #
-    res = x_flat[rows]  # ça ça va juste augmenter le nombre de x_flat ça va le duppliquer degree fois.
+    x_flat = np.ndarray.flatten(x)  # put all the features one above the other
 
-    res[rows, cols] = res[rows, cols] ** (cols + 1)  # mise à l'exposant.
+    rows, cols = np.indices((x_flat.shape[0], degree))
+    res = x_flat[rows]  # creating 'degree' columns
+
+    res[rows, cols] = res[rows, cols] ** (cols + 1)
     res = np.reshape(res, (x.shape[0], -1), 'A')
     return res
 
 
-def variance_half_max_index(tx):
+def variance_half_max_index(tx):  # TODO rename this function?
     sorted_variance = np.argsort(np.std(tx, axis=0))
     return sorted_variance[len(sorted_variance) // 5:]
 
 
-# split data in percentage to train and 1-percentage to test
-def data_train_test(y, tx, percentage):
+def split_data_train_test(y, tx, percentage):
+    """split data in percentage to train and 1-percentage to test"""
     len_y = len(y)
     len_test = int(percentage * len_y)
     y_train = y[:len_test]
@@ -235,6 +253,8 @@ def data_train_test(y, tx, percentage):
 
 
 def clean_data(tx):
+    """Remove lines which contain an element outside [mean - std, mean + std]
+    with mean: the mean of the column (feature) and std: the standard deviation of the column (feature)"""
     std_data = np.std(tx, axis=0)
     mean_data = np.mean(tx, axis=0)
 
@@ -243,16 +263,16 @@ def clean_data(tx):
     return tx[np.all(clustered_data, axis=1), :]
 
 
-"""def standardize(x):
+def standardize(x):
     centered_data = x - np.mean(x, axis=0)
     std_data = centered_data / np.std(centered_data, axis=0)
     
-    return std_data"""
+    return std_data
 
 
 # change value which are equal to -999 to 0 TODO (maybe the mean could be an idea too.. certanly a better idea)
-# !!!!! Try it !!
 def replace_999_data_elem(tx):
+
     rows,cols=np.shape(tx)
     mean_values_matrix=np.zeros((rows,cols))
     for i in range(cols):
@@ -260,21 +280,14 @@ def replace_999_data_elem(tx):
     return np.where(tx == -999, mean_values_matrix, tx)
 
 
-""" retour=np.concatenate((tx,tx_test),axis=0)
-    print(np.shape(retour))
-    retour1=np.copy(retour)
-    retour1=standardize(retour1)
-    retour1[retour==-999]=0.0
-    retour1=standardize(retour1)
-    retour1[retour==-999]=0.0
-    
-    return retour[:n_rows,],retour[n_rows:,]"""
 
-
-# Input: tX (data of features, isBinary(boolean) which indicates if we want values or only boolean higher than 0.9 or not
-# Output: correlation matrix, (to know: correlation matrix indicates if there is a linear link btw two features, how n
-#         near from, how higher the correlation)
 def calculateCovariance(tX, isBinary):
+    """
+    @param tX: data of features
+    @param isBinary: indicates if we want values or only boolean higher than 0.9 or not
+    @type isBinary: bool
+    @return: correlation matrix
+    """
     covariance = np.cov(tX, rowvar=False, bias=True)
     v = np.sqrt(np.diag(covariance))
     outer_v = np.outer(v, v)
@@ -285,18 +298,22 @@ def calculateCovariance(tX, isBinary):
     return correlation
 
 
-# calculation unbiased covariance matrix with y, it does not have a lot of impact it would be too easy if there was
-# linear link btw y and one  of the features
 def calculateCovariance_y_tX(tX, y):
+    """
+    calculation unbiased covariance matrix with y, it does not have a lot of impact it would be too easy if there was
+    linear link btw y and one  of the features
+    """
     y_tX = np.concatenate((np.transpose([y]), tX), axis=1)
-    cov_y_tX = calculateCovariance(y_tX, 1)
+    cov_y_tX = calculateCovariance(y_tX, True)
     array_of_corr = np.where(cov_y_tX[:, 0] == 1)
     return array_of_corr
 
 
-# get the features that are uncorrelated, it means it deletes the features that are too much correlated with other
-# and discard them
 def get_uncorellated_features(tX):
+    """
+    Get the features that are uncorrelated, it means it deletes the features that are too much correlated with other
+    and discard them
+    """
     binary_covariance = calculateCovariance(tX, 1)
     n_rows, n_cols = np.shape(binary_covariance)
     columns = np.full((n_rows,), True, dtype=bool)
