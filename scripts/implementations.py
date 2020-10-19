@@ -117,9 +117,27 @@ def ridge_regression(y, tx, lambda_):
     return w, compute_loss(y, tx, w)
 
 
+def logistic_regression_S(y, tx, initial_w, max_iters, gamma):
+    """Logistic regression using stochastic gradient descent"""
+    w = initial_w
+    
+    rnd_sample = np.random.random_integers(0, len(y) - 1, max_iters)
+
+    for n_iter in range(max_iters):
+        s = sigma(np.dot(tx[rnd_sample[n_iter],:], w) - y[rnd_sample[n_iter]])
+        # nan is an overflow => can be replaced by the function's value at infinity, namely 1
+        s = np.where(np.isnan(s), 1, s)
+        gradient = np.dot(np.transpose(np.matrix(tx[rnd_sample[n_iter],:])), s)
+        if np.linalg.norm(gradient) <= 1e-6 :
+            break
+        w = w - (gamma / (n_iter + 1) * gradient)
+
+    return w, compute_loss(y, tx, w)
+
+
+
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using gradient descent"""
-
     w = initial_w
     print("shape de transpose tx : " , np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ", np.shape(sigma(np.dot(tx,w))))
     
@@ -146,19 +164,23 @@ def sigma(x):
 
 
 
+# TODO : check if correct
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Regularized logistic regression using gradient descent"""
-    
     w = initial_w
 
     for n_iter in range(max_iters):
-        gradient = np.dot(np.transpose(tx), sigma(np.dot(tx, w)) - y)
-        if np.linalg.norm(gradient) <= 1e-6:
+        s = sigma(np.dot(tx, w) - y)
+        # nan is an overflow => can be replaced by the function's value at infinity, namely 1
+        s = np.where(np.isnan(s), 1, s)
+        gradient = np.dot(np.transpose(tx), s) + (lambda_ * np.linalg.norm(w)) 
+        if np.linalg.norm(gradient) <= 1e-6 :
+            print("IT: " , n_iter)
             break
-        w = w - gamma / (n_iter + 1) * gradient
-        w = w + lambda_ * np.linalg.norm(w) ** 2
+        w = w - (gamma / (n_iter + 1) * gradient)
 
     return w, compute_loss(y, tx, w)
+
 
 
 def sorted_by_variance(tx):
@@ -309,12 +331,12 @@ def calculateCovariance_y_tX(tX, y):
     return array_of_corr
 
 
-def get_uncorellated_features(tX):
+def get_uncorrelated_features(tX):
     """
     Get the features that are uncorrelated, it means it deletes the features that are too much correlated with other
     and discard them
     """
-    binary_covariance = calculateCovariance(tX, 1)
+    binary_covariance = calculateCovariance(tX, True)
     n_rows, n_cols = np.shape(binary_covariance)
     columns = np.full((n_rows,), True, dtype=bool)
 
