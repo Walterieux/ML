@@ -1,0 +1,143 @@
+\documentclass[10pt,conference,compsocconf]{IEEEtran}
+
+\usepackage{hyperref}
+\usepackage{graphicx}	% For figure environment
+
+\setlength{\tabcolsep}{11pt}
+\renewcommand{\arraystretch}{1.5}
+
+\begin{document}
+\title{Event Classification Using \\Various Machine Learning Regression Techniques}
+
+\author{
+	Jean Gillain\\
+	\textit{sciper no. ??????}
+	\and
+	 David Desboeufs\\
+	 \textit{sciper no. ??????}
+	 \and 
+	 Mathieu Caboche\\
+	 \textit{sciper no. 282182}
+}
+
+\maketitle
+
+\begin{abstract}
+	This project aims at classifying events recorded at CERN. This is achieved by implementing various regressions and eventually combining a subset of them to create a good model. The project also required us to process the given data in order to achieve the best possible results.
+  
+\end{abstract}
+
+\section{Introduction}
+In this report we will give a brief but detailed explanation 
+of the thought and development process we went through in order to 
+train a model enabling classification of a physical event. The assigned goal
+was to create a model capable of classifying data records from CERN as 
+occurrences or non-occurrences of the Higgs boson. 
+
+Section \ref{sec:dataset} 
+describes the given data set in more detail. Over the course of this project we used 
+several different regression techniques learned during the course. In order to find
+the best possible model we then combined some of the implemented regressions and 
+tuned their parameters as needed. An important part of creating a good model is 
+to have a good training data set. That is why data analysis and cleansing was a major
+part of this project as well. The methods used to analyze and clean our data sets, 
+as well as the steps we went through to find the best regression method are
+described in section \ref{sec:methods}. Finally, we will compare the models obtained by 
+various regression techniques to our best performing implementation in section \ref{sec:results}.
+
+
+\section{The Higgs boson Data Set}
+\label{sec:dataset}
+The given data set for model training consists of some $250000$ records which classify
+an event as a Higgs boson occurrence or not. The events are recordings of 30 features.
+The testing data set is identical except that classification is left up to our model.
+
+Let us describe the training data in more detail so as to highlight the importance of
+analyzing and subsequently cleaning the latter. A look at the records quickly reveals that
+the value $-999$ appears very frequently and for a number of different features and records.
+This value could thus be interpreted as an error of measurement. Furthermore we can notice that some features take on only very few different values while others almost never repeat the same value twice. This raises the question of feature importance, i.e. which features impact the classification a lot and which do not (or even lead to misclassification). Section \ref{sec:methods} describes how we decided to clean the data set with respect to the above mentioned concerns.
+
+
+\section{Models and Methods}
+\label{sec:methods}
+As required by the project guidelines we implemented 6 regression techniques. We will not go into the details of their implementation. Rather we will describe how we tried to obtain a best performing model and with which solution we eventually did get the best results. We shall also cover how we cleansed the data sets and for what reasons.
+
+% TODO fill image and decription
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\columnwidth]{denoised_signal_1d}
+	\caption{TODO}
+	\vspace{-3mm}
+	\label{fig:correlation}
+\end{figure}
+
+\subsection{Finding the Best Regression Technique} 
+
+% TODO 
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum.
+
+Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+
+
+\subsection{Data Processing} 
+
+% TODO 
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. 
+
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+\subsection{Model Validation} 
+\label{ssec:model_validation}
+
+% TODO describe how we evaluate the correctness of a model
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+
+
+
+\section{Results}
+\label{sec:results}
+
+In this section we analyze our best performing regression and model to the models obtained using the given, required regressions.
+
+% TODO fill image
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\columnwidth]{denoised_signal_1d}
+	\caption{Gradient convergence for different regression techniques.}
+	\vspace{-3mm}
+	\label{fig:gradients}
+\end{figure}
+
+One criterion to evaluate the performance of a gradient descent regression is the speed at which the gradient converges. In fact, the faster the gradient goes towards 0, the faster our regression will find a good model. Since many of the regressions implemented during this project are gradient descent algorithms, this comparison is relevant. Figure \ref{fig:gradients} shows gradient convergence for our implementations of various gradient descent algorithms.
+
+
+To compare the performance of the models resulting from our various regression implementations we can simply compare the model accuracy. I.e. we check what percentage of a known classified set is correctly classified by our model, as described in section \ref{ssec:model_validation}. The model accuracies obtained by our various regressions are listed in table \ref{tab:model_accuracy}.
+
+% TODO fill in the correect values, add some lines if necessary
+\begin{table}[h]
+	\begin{tabular}{ |c|c| } 
+		\hline
+		\textbf{Regression Technique} & \textbf{Obtained Model Accuracy}  \\
+		\hline
+		Least Squares GD (and SGD) & 70$\%$ \\ 
+		Least Squares & 70$\%$ \\ 
+		Ridge Regression & 70$\%$ \\ 
+		Logistic Regression & 70$\%$ \\ 
+		Regularized Logistic Regression & 70$\%$ \\ 
+		Our Best Regression & 70$\%$ \\ 
+		\hline
+	\end{tabular}
+	\caption{Accuracy of Various Models Obtained by Our Regressions}
+	\label{tab:model_accuracy}
+\end{table}
+
+\section{Summary}
+\label{sec:summary}
+% TODO
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+
+
+
+
+\end{document}
