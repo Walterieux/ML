@@ -62,13 +62,8 @@ This value could thus be interpreted as an error of measurement. Furthermore we 
 \label{sec:methods}
 As required by the project guidelines we implemented 6 regression techniques. We will not go into the details of their implementation. Rather we will describe how we tried to obtain a best performing model and with which solution we eventually did get the best results. We shall also cover how we cleansed the data sets and for what reasons.
 
-\subsection{Finding the Best Regression Technique} 
-
-% TODO 
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-
 % TODO fill image and decription
-\begin{figure}[h!]
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=\columnwidth]{denoised_signal_1d}
 	\caption{TODO}
@@ -76,10 +71,21 @@ Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod 
 	\label{fig:correlation}
 \end{figure}
 
+\subsection{Finding the Best Regression Technique} 
+
+% TODO 
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum.
+
+Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+
+
 \subsection{Data Processing} 
 
 % TODO 
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. 
+
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
 
 \subsection{Model Validation} 
 \label{ssec:model_validation}
@@ -91,33 +97,11 @@ Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod 
 
 \section{Results}
 \label{sec:results}
+
 In this section we analyze our best performing regression and model to the models obtained using the given, required regressions.
 
-One criterion to evaluate the performance of a gradient descent regression is the speed at which the gradient converges. In fact, the faster the gradient goes towards 0, the faster our regression will find a good model. Since many of the regressions implemented during this project are gradient descent algorithms, this comparison is relevant. Figure \ref{fig:gradients} shows gradient convergence for our implementations of various gradient descent algorithms.
-
-To compare the performance of the models resulting from our various regression implementations we can simply compare the model accuracy. I.e. we check what percentage of a known classified set is correctly classified by our model, as described in section \ref{ssec:model_validation}. The model accuracies obtained by our various regressions are listed in table \ref{tab:model_accuracy}.
-
-
-% TODO fill in the correect values, add some lines if necessary
-\begin{table}[h!]
-		\begin{tabular}{ |c|c| } 
-			\hline
-			\textbf{Regression Technique} & \textbf{Obtained Model Accuracy}  \\
-			\hline
-			Least Squares GD (and SGD) & 70$\%$ \\ 
-			Least Squares & 70$\%$ \\ 
-			Ridge Regression & 70$\%$ \\ 
-			Logistic Regression & 70$\%$ \\ 
-			Regularized Logistic Regression & 70$\%$ \\ 
-			Our Best Regression & 70$\%$ \\ 
-			\hline
-		\end{tabular}
-\caption{Accuracy of Various Models Obtained by Our Regressions}
-\label{tab:model_accuracy}
-\end{table}
-
 % TODO fill image
-\begin{figure}[h!]
+\begin{figure}[h]
 	\centering
 	\includegraphics[width=\columnwidth]{denoised_signal_1d}
 	\caption{Gradient convergence for different regression techniques.}
@@ -125,15 +109,35 @@ To compare the performance of the models resulting from our various regression i
 	\label{fig:gradients}
 \end{figure}
 
+One criterion to evaluate the performance of a gradient descent regression is the speed at which the gradient converges. In fact, the faster the gradient goes towards 0, the faster our regression will find a good model. Since many of the regressions implemented during this project are gradient descent algorithms, this comparison is relevant. Figure \ref{fig:gradients} shows gradient convergence for our implementations of various gradient descent algorithms.
+
+
+To compare the performance of the models resulting from our various regression implementations we can simply compare the model accuracy. I.e. we check what percentage of a known classified set is correctly classified by our model, as described in section \ref{ssec:model_validation}. The model accuracies obtained by our various regressions are listed in table \ref{tab:model_accuracy}.
+
+% TODO fill in the correect values, add some lines if necessary
+\begin{table}[h]
+	\begin{tabular}{ |c|c| } 
+		\hline
+		\textbf{Regression Technique} & \textbf{Obtained Model Accuracy}  \\
+		\hline
+		Least Squares GD (and SGD) & 70$\%$ \\ 
+		Least Squares & 70$\%$ \\ 
+		Ridge Regression & 70$\%$ \\ 
+		Logistic Regression & 70$\%$ \\ 
+		Regularized Logistic Regression & 70$\%$ \\ 
+		Our Best Regression & 70$\%$ \\ 
+		\hline
+	\end{tabular}
+	\caption{Accuracy of Various Models Obtained by Our Regressions}
+	\label{tab:model_accuracy}
+\end{table}
 
 \section{Summary}
 \label{sec:summary}
+% TODO
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
 
 
 
-\section*{Acknowledgements}
-
-\bibliographystyle{IEEEtran}
-\bibliography{literature}
 
 \end{document}
