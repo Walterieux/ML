@@ -8,6 +8,7 @@ import numpy as np
 # TODO remove: only numpy is allowed
 from matplotlib import pyplot as plt
 import seaborn as sns
+import sys
 
 from proj1_helpers import *
 
@@ -22,7 +23,7 @@ def compute_loss_binary(y_test, tx_test, w_train):
     # predicted_y=np.where(predicted_y>0,1,-1)
     predicted_y = np.where(predicted_y > 0.5, 1, 0)
     sum_y = predicted_y - y
-    return (1 - np.count_nonzero(sum_y) / len(sum_y))
+    return 1 - np.count_nonzero(sum_y) / len(sum_y)  # TODO if len(sum_y) is equal to zero
 
 
 def compute_loss(y, tx, w):
@@ -137,28 +138,28 @@ def logistic_regression_S(y, tx, initial_w, max_iters, gamma):
     return w, compute_loss(y, tx, w)
 
 
-def logistic_regression(y, tx, initial_w, max_iters, gamma):
+def logistic_regression(y, tx, initial_w, max_iters, gamma: float):
     """Logistic regression using gradient descent"""
+
     w = initial_w
-    print("shape de transpose tx : ", np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ",
-          np.shape(sigma(np.dot(tx, w))))
 
     for n_iter in range(max_iters):
         s_sigma = sigma(np.dot(tx, w))
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
         s_sigma = np.where(np.isnan(s_sigma), 1, s_sigma)
-        gradient = np.dot(np.transpose(tx), s_sigma - y)
-        print(n_iter)
+
+        diff = s_sigma - y.reshape(s_sigma.shape)
+        gradient = np.dot(np.transpose(tx), diff)
+
         if np.linalg.norm(gradient) <= 1e-6:
             break
-        w = w - gamma / (n_iter + 1) * gradient
-    print("n_iter : ", n_iter)
+        w = np.subtract(w, gamma / (n_iter + 1) * gradient)
 
     return w, compute_loss(y, tx, w)
 
 
 def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
-    """Logistic regression using gradient descent"""
+    """Logistic regression using newton's method"""
     w = initial_w
     print("shape de transpose tx : ", np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ",
           np.shape(sigma(np.dot(tx, w))))
@@ -185,7 +186,7 @@ def sigma(x):
 
 
 def inverse_hessian(s_sigma, tX):
-    n_row, n_col = np.size(tX)
+    n_row, n_col = tX.shape
     S = np.dot(np.eye(n_row), s_sigma * (1 - s_sigma))
     return np.linalg.inv(np.dot(np.dot(np.transpose(tX), S), tX))
     # S=np.dot(sigma(np.dot(np.tranpose(tX),w)),np.eye(n_row)-
