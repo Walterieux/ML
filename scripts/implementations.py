@@ -148,7 +148,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma: float):
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
         s_sigma = np.where(np.isnan(s_sigma), 1, s_sigma)
 
-        diff = s_sigma - y.reshape(s_sigma.shape)
+        diff = s_sigma - y
         gradient = np.dot(np.transpose(tx), diff)
 
         if np.linalg.norm(gradient) <= 1e-6:
@@ -187,8 +187,11 @@ def sigma(x):
 
 def inverse_hessian(s_sigma, tX):
     n_row, n_col = tX.shape
-    S = np.dot(np.eye(n_row), s_sigma * (1 - s_sigma))
-    return np.linalg.inv(np.dot(np.dot(np.transpose(tX), S), tX))
+    S_flatten = s_sigma * (1 - s_sigma) #= np.dot(np.eye(n_row, dtype=float), s_sigma * (1 - s_sigma))  # TODO change this, impossible to allocate np.eye
+                                                                        # We can use a for to multiply each row by
+                                                                        # S[n,n], with this s can be store in 1D array
+    return np.linalg.inv(np.dot(np.transpose(tX) * S_flatten, tX))
+    # return np.linalg.inv(np.dot(np.dot(np.transpose(tX), S), tX))
     # S=np.dot(sigma(np.dot(np.tranpose(tX),w)),np.eye(n_row)-
 
 
