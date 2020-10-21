@@ -18,10 +18,11 @@ gamma = 1e-10
 selected_features = remove_features_with_high_frequencies(tX, 10)
 selected_lines = remove_lines_with_999(tX[:, selected_features], 2)
 
-print('Split data 90%')
-y_train, y_train_test, tx_train, tx_train_test = split_data_train_test(y[selected_lines],
+print('Split data cross validation: 80% train, 20% test')
+k_indices = build_k_indices(y, 5)
+y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y[selected_lines],
                                                                        tX[:, selected_features][selected_lines, :],
-                                                                       0.90)
+                                                                       k_indices)
 
 print('compute weights using newton logistic regression')
 weights, loss = newton_logistic_regression(y_train, tx_train, np.zeros((tx_train.shape[1]), dtype=float), max_iters, gamma)

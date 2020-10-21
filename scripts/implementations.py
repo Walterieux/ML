@@ -187,9 +187,10 @@ def sigma(x):
 
 def inverse_hessian(s_sigma, tX):
     n_row, n_col = tX.shape
-    S_flatten = s_sigma * (1 - s_sigma) #= np.dot(np.eye(n_row, dtype=float), s_sigma * (1 - s_sigma))  # TODO change this, impossible to allocate np.eye
+    S_flatten = s_sigma * (1 - s_sigma)  # = np.dot(np.eye(n_row, dtype=float), s_sigma * (1 - s_sigma))  # TODO change this, impossible to allocate np.eye
                                                                         # We can use a for to multiply each row by
                                                                         # S[n,n], with this s can be store in 1D array
+
     return np.linalg.inv(np.dot(np.transpose(tX) * S_flatten, tX))
     # return np.linalg.inv(np.dot(np.dot(np.transpose(tX), S), tX))
     # S=np.dot(sigma(np.dot(np.tranpose(tX),w)),np.eye(n_row)-
@@ -215,6 +216,36 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
 def sorted_by_variance(tx):
     return np.argsort(np.std(tx, axis=0))
+
+
+def build_k_indices(y, k_fold, seed=1):
+    """build k indices for k-fold."""
+    num_row = y.shape[0]
+    interval = int(num_row / k_fold)
+    np.random.seed(seed)
+    indices = np.random.permutation(num_row)
+    k_indices = [indices[k * interval: (k + 1) * interval]
+                 for k in range(k_fold)]
+
+    return np.array(k_indices)
+
+
+def cross_validation_data(y, tx, k_indices, k=None):
+    """Returns train data and test data, get k'th subgroup in test, others in train
+
+    Note if k is None, k is chosen random"""
+
+    if k is None:
+        k = np.random.randint(len(k_indices))
+
+    tx_test = tx[k_indices[k]]
+    y_test = y[k_indices[k]]
+
+    train_indexes = np.concatenate((k_indices[:k].flatten(), k_indices[k + 1:].flatten()))
+    tx_train = tx[train_indexes, :]
+    y_train = y[train_indexes]
+
+    return y_train, y_test, tx_train, tx_test
 
 
 def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4, degree5=5):
@@ -383,7 +414,7 @@ def test_fct(tX, y, lambda_, i):
     features = get_uncorrelated_features(tX_1)
     tX_1 = tX_1[:, features]
     # creation of segmentation train and train_test 90% / 10%
-    y_train, y_train_test, tx_train, tx_train_test = data_train_test(y, tX_1, 0.90)
+    y_train, y_train_test, tx_train, tx_train_test = split_data_train_test(y, tX_1, 0.90)
     # calculate of the weights with the train part
     # tx_train_poly=build_poly(tx_train,5)
     tX_train_poly = build_poly_variance(tx_train, 0, i, i, i, i, i)
