@@ -128,8 +128,9 @@ def logistic_regression_S(y, tx, initial_w, max_iters, gamma):
 
     for n_iter in range(max_iters):
         s = sigma(np.dot(tx[rnd_sample[n_iter], :], w) - y[rnd_sample[n_iter]])
+        # TODO : remove next 2 lines
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
-        s = np.where(np.isnan(s), 1, s)
+        # s = np.where(np.isnan(s), 1, s)
         gradient = np.dot(np.transpose(np.matrix(tx[rnd_sample[n_iter], :])), s)
         if np.linalg.norm(gradient) <= 1e-6:
             break
@@ -145,8 +146,9 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma: float):
 
     for n_iter in range(max_iters):
         s_sigma = sigma(np.dot(tx, w))
+        # TODO : remove next 2 lines
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
-        s_sigma = np.where(np.isnan(s_sigma), 1, s_sigma)
+        # s_sigma = np.where(np.isnan(s_sigma), 1, s_sigma)
 
         diff = s_sigma - y
         gradient = np.dot(np.transpose(tx), diff)
@@ -166,8 +168,9 @@ def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
 
     for n_iter in range(max_iters):
         s_sigma = sigma(np.dot(tx, w))
+        # TODO : remove next 2 lines
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
-        s_sigma = np.where(np.isnan(s_sigma), 1, s_sigma)
+        # s_sigma = np.where(np.isnan(s_sigma), 1, s_sigma)
 
         gradient = np.dot(np.transpose(tx), s_sigma - y)
 
@@ -180,9 +183,10 @@ def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
 
 
 def sigma(x):
-    sigma_output = np.exp(x) / (1 + np.exp(x))
-
-    return sigma_output
+    if x > 0 :
+        return 1/(1+exp(-x))
+    else :
+        return np.exp(x) / (1 + np.exp(x))
 
 
 def inverse_hessian(s_sigma, tX):
@@ -203,8 +207,9 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
     for n_iter in range(max_iters):
         s = sigma(np.dot(tx, w) - y)
+        # TODO : remove next 2 lines
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
-        s = np.where(np.isnan(s), 1, s)
+        # s = np.where(np.isnan(s), 1, s)
         gradient = np.dot(np.transpose(tx), s) + (lambda_ * np.linalg.norm(w))
         if np.linalg.norm(gradient) <= 1e-6:
             print("IT: ", n_iter)
