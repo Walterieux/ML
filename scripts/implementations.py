@@ -21,6 +21,7 @@ def compute_loss_binary(y_test,tx_test,w_train):
     predicted_y=np.dot(tx_test,w_train)
     #predicted_y=np.where(predicted_y>0,1,-1)
     predicted_y=np.where(predicted_y>0.5,1,0)
+
     sum_y=predicted_y-y
     return (1-np.count_nonzero(sum_y)/len(sum_y))
     
@@ -49,7 +50,7 @@ def compute_gradient_MAE(y, tx, w):
 
     # on a 1/N sum_1^N |y-x^_ntw|
     # donc le gradient ça devrait être -1/N * X^T sign(y-x^t_nw)
-    gradient = -1 / len(y) * np.dot(np.transpose(tx), np.sign(y - np.dot(tx, w)))
+    gradient = -1 / np.shape(tx)[0] * np.dot(np.transpose(tx), np.sign(y - np.dot(tx, w)))
     return gradient
 
 
@@ -71,13 +72,8 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     to_plot = np.zeros((max_iters, 1))
     for i in range(max_iters):
         to_plot[i] = compute_loss(y, tx, w_to_plot[i])
-    print(to_plot)
-    plt.plot(np.linspace(1, max_iters, max_iters), to_plot)
-    plt.scatter(np.linspace(1, max_iters, max_iters), to_plot)
-    plt.title("Error in term of number of iterations")
-    plt.xlabel("number of iterations")
-    plt.ylabel("Error")
-    plt.yscale("log")
+    return w,compute_loss(y,tx,w),to_plot
+    
 
     return w, compute_loss(y, tx, w)
 
@@ -87,14 +83,20 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 
     n = len(y)
     rnd_sample = np.random.random_integers(0, n - 1, max_iters)
-
+    w_to_plot = []
     w = initial_w
+
+    w_to_plot.append(w)
     for n_iter in range(max_iters):
-        subgradient = compute_gradient(y[rnd_sample[n_iter]], tx[rnd_sample[n_iter], :], w, n)
+        subgradient = compute_gradient(y[rnd_sample[n_iter]], tx[rnd_sample[n_iter], :], w)
         if np.linalg.norm(subgradient) <= 1e-6:
             break
         w = w - gamma * subgradient
-
+        w_to_plot.append(w)
+    to_plot = np.zeros((max_iters, 1))
+    for i in range(max_iters):
+        to_plot[i] = compute_loss(y, tx, w_to_plot[i])
+    return w,compute_loss(y,tx,w),to_plot
 
 def least_squares(y, tx):
     """Least squares regression using normal equations"""
@@ -121,19 +123,26 @@ def ridge_regression(y, tx, lambda_):
 def logistic_regression_S(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using stochastic gradient descent"""
     w = initial_w
-    
-    rnd_sample = np.random.random_integers(0, len(y) - 1, max_iters)
+    w_to_plot = []
 
+    w_to_plot.append(w)
+    rnd_sample = np.random.random_integers(0, len(y) - 1, max_iters)
     for n_iter in range(max_iters):
-        s = sigma(np.dot(tx[rnd_sample[n_iter],:], w) - y[rnd_sample[n_iter]])
+        s = (sigma(np.dot(tx[rnd_sample[n_iter],:], w)) - y[rnd_sample[n_iter]])
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
         s = np.where(np.isnan(s), 1, s)
-        gradient = np.dot(np.transpose(np.matrix(tx[rnd_sample[n_iter],:])), s)
+
+        gradient = tx[rnd_sample[n_iter],:] * s 
+        
         if np.linalg.norm(gradient) <= 1e-6 :
             break
-        w = w - (gamma / (n_iter + 1) * gradient)
-
-    return w, compute_loss(y, tx, w)
+        w = w - gamma  * gradient
+        w_to_plot.append(w)
+    to_plot = np.zeros((max_iters, 1))
+    for i in range(max_iters):
+        to_plot[i] = compute_loss(y, tx, w_to_plot[i])
+    return w,compute_loss(y,tx,w),to_plot
+    #return w, compute_loss(y, tx, w)
 
 
 
@@ -141,55 +150,62 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using gradient descent"""
     w = initial_w
     print("shape de transpose tx : " , np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ", np.shape(sigma(np.dot(tx,w))))
-    
+    w_to_plot = []
+    w_to_plot.append(w)
     for n_iter in range(max_iters):
         s_sigma= sigma(np.dot(tx, w))
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
         s_sigma= np.where(np.isnan(s_sigma), 1, s_sigma)
         gradient = np.dot(np.transpose(tx), s_sigma-y)
-        print(n_iter)
         if np.linalg.norm(gradient) <= 1e-6 :
             break
         w = w - gamma / (n_iter + 1) * gradient
-    print("n_iter : ",n_iter)
+        w_to_plot.append(w)
+    to_plot = np.zeros((max_iters, 1))
+    for i in range(max_iters):
+        to_plot[i] = compute_loss(y, tx, w_to_plot[i])
+    return w,compute_loss(y,tx,w),to_plot
+    #return w, compute_loss(y, tx, w)
 
-    return w, compute_loss(y, tx, w)
-
-def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
-    """Logistic regression using gradient descent"""
+def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma):
     w = initial_w
-    print("shape de transpose tx : " , np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ", np.shape(sigma(np.dot(tx,w))))
-    
+    w_to_plot = []
+
+    w_to_plot.append(w)
+    rnd_sample = np.random.random_integers(0, len(y) - 1, max_iters)
     for n_iter in range(max_iters):
-        s_sigma= sigma(np.dot(tx, w))
+        s_sigma=sigma(np.dot(tx[rnd_sample[n_iter],:], w))
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
-        s_sigma= np.where(np.isnan(s_sigma), 1, s_sigma)
         
-        gradient = np.dot(np.transpose(tx), s_sigma-y)
+        s = s_sigma - y[rnd_sample[n_iter]]
+        # nan is an overflow => can be replaced by the function's value at infinity, namely 1
+        s = np.where(np.isnan(s), 1, s)
+
+        gradient = tx[rnd_sample[n_iter],:] * s 
         
         if np.linalg.norm(gradient) <= 1e-6 :
             break
-        w = w - gamma / (n_iter + 1) * np.dot(inverse_hessian(s_sigma,tx), gradient)
-    print("n_iter : ",n_iter)
+        w = w - gamma/(n_iter + 1)   * np.dot(inverse_hessian(s_sigma,tx[rnd_sample[n_iter],:]), gradient) 
+        w_to_plot.append(w)
+    to_plot = np.zeros((max_iters, 1))
+    for i in range(max_iters):
+        to_plot[i] = compute_loss(y, tx, w_to_plot[i])
+    return w, compute_loss(y, tx, w),to_plot
 
-    return w, compute_loss(y, tx, w)
-
+   
 def sigma(x):
 
     sigma_output= np.exp(x) / (1 + np.exp(x))
     
     # nan is an overflow => can be replaced by the function's value at infinity, namely 1
 
-    sigma_output[np.isnan(sigma_output)]=1
     
     return sigma_output
 
 def inverse_hessian(s_sigma,tX):
-    n_row,n_col=np.size(tX)
-    S=np.dot(np.eye( n_row ), s_sigma*(1-s_sigma) )
-    return np.linalg.inv( np.dot( np.dot( np.transpose( tX) , S), tX ) )
+    S=(s_sigma*(1-s_sigma)) 
+    return np.dot(np.transpose(tX),tX)*S
     #S=np.dot(sigma(np.dot(np.tranpose(tX),w)),np.eye(n_row)-
-    
 
 
 
@@ -349,10 +365,10 @@ def get_uncorrelated_features(tX):
 
 def test_fct(tX,y,lambda_,i):
     tX_1=replace_999_data_elem(tX)
-    features=get_uncorellated_features(tX_1)
+    features=get_uncorrelated_features(tX_1)
     tX_1=tX_1[:,features]
     #creation of segmentation train and train_test 90% / 10%
-    y_train,y_train_test,tx_train,tx_train_test=data_train_test(y,tX_1,0.90)
+    y_train,y_train_test,tx_train,tx_train_test=split_data_train_test(y,tX_1,0.90)
     #calculate of the weights with the train part 
     #tx_train_poly=build_poly(tx_train,5)
     tX_train_poly=build_poly_variance(tx_train,0,i,i,i,i,i)
