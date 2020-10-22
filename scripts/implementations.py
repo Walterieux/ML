@@ -8,33 +8,55 @@ import numpy as np
 # TODO remove: only numpy is allowed
 from matplotlib import pyplot as plt
 import seaborn as sns
+import sys
 
 from proj1_helpers import *
 
 
-#def loss_classification(y,tx,w):
-    
+# def loss_classification(y,tx,w):
 
-def compute_loss_binary(y_test,tx_test,w_train): 
+
+def compute_loss_binary(y_test,tx_test,w_train,islogistic=False): 
     predicted_y=np.dot(tx_test,w_train)
-    
-    predicted_y=np.where(predicted_y>0,1,-1)
-    predicted_y=np.where(predicted_y>0.5,1,-1)
+    if islogistic:
+            predicted_y=np.where(predicted_y>0.5,1,-1)
 
-    sum_y=predicted_y-y
+    predicted_y=np.where(predicted_y>0,1,-1)
+
+    sum_y=predicted_y-y_test
     return (1-np.count_nonzero(sum_y)/len(sum_y))
     
-def compute_loss(y, tx, w):
-    """Calculate the loss using mean squared error (MSE)"""
 
+def compute_loss(y, tx, w,logistic=False):
+    """Calculate the loss using mean squared error (MSE)"""
+    if logistic: 
+        return 0.5*np.mean( np.square(np.where(y==-1,0,1) - np.dot(tx,w)))
     return 0.5 * np.mean(np.square(y - np.dot(tx, w)))
 
 
-def compute_loss_MAE(y, tx, w):
+def compute_loss_MAE(y, tx, w,logistic=False):
     """Calculate the loss using mean absolute error (MAE)"""
-
+    if logistic: 
+        return 0.5*np.mean( np.square(np.where(y==-1,0,1) - np.dot(tx,w)))
     return np.mean(np.abs(y - np.dot(tx, w)))
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+#methodes to implement 
+
+
+#Compute of gradients 
 
 def compute_gradient(y, tx, w):
     """Calculate the gradient"""
@@ -53,7 +75,9 @@ def compute_gradient_MAE(y, tx, w):
     return gradient
 
 
-def least_squares_GD(y, tx, initial_w, max_iters, gamma):
+
+############# LEAST SQUARE METHODS ###############################"
+def least_squares_GD(y, tx, initial_w, max_iters, gamma,toplot=False):
     """Linear regression using gradient descent algorithm"""
 
     # Define parameters to store w and loss
@@ -67,14 +91,13 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
         w = w - gamma / (n_iter + 1) * compute_gradient(y, tx, w)
         gradient_to_plot.append(np.linalg.norm(compute_gradient(y, tx, w)))
 
-    
-    return w,compute_loss(y,tx,w),gradient_to_plot
-    
+    if toplot==True:
+        return w,compute_loss(y,tx,w),gradient_to_plot
 
     return w, compute_loss(y, tx, w)
 
 
-def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
+def least_squares_SGD(y, tx, initial_w, max_iters, gamma,toplot=False):
     """Linear regression using stochastic gradient descent algorithm"""
 
     n = len(y)
@@ -88,7 +111,9 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
             break
         w = w - gamma * subgradient
         gradient_to_plot.append(np.linalg.norm(subgradient))
-    return w,compute_loss(y,tx,w),gradient_to_plot
+    if toplot:
+        return w,compute_loss(y,tx,w),gradient_to_plot
+    return w,compute_loss(y,tx,w)
 
 def least_squares(y, tx):
     """Least squares regression using normal equations"""
@@ -108,11 +133,15 @@ def ridge_regression(y, tx, lambda_):
 
     y1 = np.dot(x_trans, y)
     w = np.linalg.solve(A + B, y1)
-    
+
     return w, compute_loss(y, tx, w)
 
 
-def logistic_regression_S(y, tx, initial_w, max_iters, gamma):
+
+
+####################### LOGISTIC REGRESSION ###########################"""
+
+def logistic_regression_S(y, tx, initial_w, max_iters, gamma,toplot=False):
     """Logistic regression using stochastic gradient descent"""
     w = initial_w
     gradient_to_plot = []
@@ -129,19 +158,21 @@ def logistic_regression_S(y, tx, initial_w, max_iters, gamma):
             break
         w = w - gamma * gradient
         gradient_to_plot.append(np.linalg.norm(gradient))
-    
-    return w,compute_loss(y,tx,w),gradient_to_plot
+    if toplot:
+        return w,compute_loss(y,tx,w,True),gradient_to_plot
+    return w,compute_loss(y,tx,w,True)
     #return w, compute_loss(y, tx, w)
 
 
-
-def logistic_regression(y, tx, initial_w, max_iters, gamma):
+def logistic_regression(y, tx, initial_w, max_iters, gamma: float,toplot=False):
     """Logistic regression using gradient descent"""
+
     w = initial_w
-    print("shape de transpose tx : " , np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ", np.shape(sigma(np.dot(tx,w))))
     gradient_to_plot = []
+
     for n_iter in range(max_iters):
-        s_sigma= sigma(np.dot(tx, w))
+        s_sigma = sigma(np.dot(tx, w))
+        # TODO : remove next 2 lines
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
         s_sigma= np.where(np.isnan(s_sigma), 1, s_sigma)
         gradient = np.dot(np.transpose(tx), s_sigma-y)
@@ -149,11 +180,28 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
             break
         w = w - gamma / (n_iter + 1) * gradient
         gradient_to_plot.append(np.linalg.norm(gradient))
-    
-    return w,compute_loss(y,tx,w),gradient_to_plot
-    #return w, compute_loss(y, tx, w)
+    if toplot:
+        return w,compute_loss(y,tx,w,True),gradient_to_plot
+    return w, compute_loss(y, tx, w,True)
 
-def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma):
+def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
+    """Regularized logistic regression using gradient descent"""
+    w = initial_w
+
+    for n_iter in range(max_iters):
+        s = sigma(np.dot(tx, w) - y)
+        # TODO : remove next 2 lines
+        # nan is an overflow => can be replaced by the function's value at infinity, namely 1
+        # s = np.where(np.isnan(s), 1, s)
+        gradient = np.dot(np.transpose(tx), s) + (lambda_ * np.linalg.norm(w))
+        if np.linalg.norm(gradient) <= 1e-6:
+            print("IT: ", n_iter)
+            break
+        w = w - (gamma / (n_iter + 1) * gradient)
+
+    return w, compute_loss(y, tx, w,True)
+
+def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma,toplot=False):
     w = initial_w
     gradient_to_plot = []
 
@@ -172,47 +220,79 @@ def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma):
             break
         w = w - gamma/(n_iter + 1)   * np.dot(inverse_hessian(s_sigma,tx[rnd_sample[n_iter],:]), gradient) 
         gradient_to_plot.append(np.linalg.norm(gradient))
-    
-    return w, compute_loss(y, tx, w),gradient_to_plot
+    if toplot: 
+        return w, compute_loss(y, tx, w,True),gradient_to_plot
+    return w, compute_loss(y, tx, w,True)
 
    
+
+
+
+def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
+    """Logistic regression using newton's method"""
+    w = initial_w
+    print("shape de transpose tx : ", np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ",
+          np.shape(sigma(np.dot(tx, w))))
+
+    for n_iter in range(max_iters):
+        s_sigma = sigma(np.dot(tx, w))
+        # TODO : remove next 2 lines
+        # nan is an overflow => can be replaced by the function's value at infinity, namely 1
+        # s_sigma = np.where(np.isnan(s_sigma), 1, s_sigma)
+
+        gradient = np.dot(np.transpose(tx), s_sigma - y)
+
+        if np.linalg.norm(gradient) <= 1e-6:
+            break
+        w = w - gamma / (n_iter + 1) * np.dot(inverse_hessian(s_sigma, tx), gradient)
+    print("n_iter : ", n_iter)
+
+    return w, compute_loss(y, tx, w,True)
+
+
+
 def sigma(x):
+    if type(x)=='numpy.ndarray':
+        return_sigma=np.zeros(len(x))
+        return_sigma[x>0]=1/(1+np.exp(-x[x>0]))
+        return_sigma[x<=0]=np.exp(x[x<=0]) / (1 + np.exp(x[x<=0]))
+        return return_sigma
+    else: 
+        return np.exp(x)/(1+np.exp(x))
 
-    sigma_output= np.exp(x) / (1 + np.exp(x))
-    
-    # nan is an overflow => can be replaced by the function's value at infinity, namely 1
 
-    
-    return sigma_output
 
-def inverse_hessian(s_sigma,tX):
-    S=(s_sigma*(1-s_sigma)) 
-    return np.dot(np.transpose(tX),tX)*S
-    #S=np.dot(sigma(np.dot(np.tranpose(tX),w)),np.eye(n_row)-
-
+def inverse_hessian(s_sigma, tX):
+    S_flatten = s_sigma * (1 - s_sigma)  # = np.dot(np.eye(n_row, dtype=float), s_sigma * (1 - s_sigma))  # TODO change this, impossible to allocate np.eye
+                                                                        # We can use a for to multiply each row by
+    return 1/np.dot(np.tranpose(tX) * S_flatten,tX)                                                                  # S[n,n], with this s can be store in 1D array
+    """return np.linalg.inv(np.dot(np.transpose(tX) * S_flatten, tX))
+    # return np.linalg.inv(np.dot(np.dot(np.transpose(tX), S), tX))
+    # S=np.dot(sigma(np.dot(np.tranpose(tX),w)),np.eye(n_row) """
 
 
 # TODO : check if correct
-def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
-    """Regularized logistic regression using gradient descent"""
-    w = initial_w
-
-    for n_iter in range(max_iters):
-        s = sigma(np.dot(tx, w) - y)
-        # nan is an overflow => can be replaced by the function's value at infinity, namely 1
-        s = np.where(np.isnan(s), 1, s)
-        gradient = np.dot(np.transpose(tx), s) + (lambda_ * np.linalg.norm(w)) 
-        if np.linalg.norm(gradient) <= 1e-6 :
-            print("IT: " , n_iter)
-            break
-        w = w - (gamma / (n_iter + 1) * gradient)
-
-    return w, compute_loss(y, tx, w)
 
 
+
+
+
+
+
+
+
+
+
+
+#########Preprocesisng variance 
+    
 
 def sorted_by_variance(tx):
     return np.argsort(np.std(tx, axis=0))
+
+
+
+
 
 
 def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4, degree5=5):
@@ -228,12 +308,9 @@ def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4
 
     newx = np.zeros((nrows, ncol_tot))
     current = 0
-    # list_nb_gr_vr=np.full((len(params),nb_gr_vr,dtype=int)
-    # list_nb_gr_vr[-1]+=nb_gr_vr % 5
+    
     for counter, param in enumerate(params[:-1]):
-        # print("param :" , param)
-        # print("current : ", current)
-        # print("current + nb_gr_vr * param",current + nb_gr_vr * param)
+        
         newx[:, current:current + nb_gr_vr * param] = build_poly(tx[:, counter * nb_gr_vr:(counter + 1) * nb_gr_vr],
                                                                  param)
         current = nb_gr_vr * param + current
@@ -242,6 +319,13 @@ def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4
     # print(newx)
     return newx
 
+
+def get_higher_minus_1(x):
+    return [i  for i in range(np.shape(x)[1]) if (x[:,i]>-1).all()]
+
+def log_inv(x):
+    # only for columns which are positive in values
+    return np.log(1/(1+x))
 
 def build_poly(x, degree):
     """polynomial basis functions for input data x, for j=1 up to j=degree"""
@@ -254,6 +338,39 @@ def build_poly(x, degree):
     res[rows, cols] = res[rows, cols] ** (cols + 1)
     res = np.reshape(res, (x.shape[0], -1), 'A')
     return res
+
+
+
+def remove_features_with_high_frequencies(tx, percentage):
+    """
+    Remove all features (columns) that contains element with frequency higher than percentage
+
+    returns an array of bool (false if the feature is removed)
+    """
+    feature_selected = np.zeros(tx.shape[1], dtype=bool)
+    for ind, tx_row in enumerate(np.transpose(tx)):
+        unique, counts = np.unique(tx_row, return_counts=True)
+        feature_selected[ind] = True if counts[0] / len(tx_row) < percentage / 100 else False
+
+    return feature_selected
+
+
+def remove_lines_with_999(tx, number: int):
+    """
+    Remove all lines that contains more than 'number' of the value '-999'
+
+    returns an array of bool (false if the line is removed)
+
+    Example:
+    # >>> tx = np.array([[1, 2, -999, -999, 5, -999], [1, 2, 3, 4, -999, -999]])
+    # >>> remove_lines_with_999(tx, 2)
+    # array([False  True])
+    """
+    lines_selected = np.ones(tx.shape[0], dtype=bool)
+    for ind, tx_line in enumerate(tx):
+        lines_selected[ind] = True if sum(tx_line == -999) <= number else False
+
+    return lines_selected
 
 
 def variance_half_max_index(tx):  # TODO rename this function?
@@ -280,25 +397,23 @@ def clean_data(tx):
 
     clustered_data = np.concatenate((mean_data - std_data < tx, tx < mean_data + std_data), axis=1)
 
-    return tx[np.all(clustered_data, axis=1), :]
+    return tx[np.all(clustered_data, axis=1), :]  # TODO take if less than 30% percent out
 
 
 def standardize(x):
     centered_data = x - np.mean(x, axis=0)
     std_data = centered_data / np.std(centered_data, axis=0)
-    
+
     return std_data
 
 
 # change value which are equal to -999 to 0 TODO (maybe the mean could be an idea too.. certanly a better idea)
 def replace_999_data_elem(tx):
-
-    rows,cols=np.shape(tx)
-    mean_values_matrix=np.zeros((rows,cols))
+    rows, cols = np.shape(tx)
+    mean_values_matrix = np.zeros((rows, cols))
     for i in range(cols):
-        mean_values_matrix[:,i]=np.mean(tx[tx[:,i]!=-999,i])
+        mean_values_matrix[:, i] = np.median(tx[tx[:, i] != -999, i]) # we can put np.mean or np.median as you wish..
     return np.where(tx == -999, mean_values_matrix, tx)
-
 
 
 def calculateCovariance(tX, isBinary):
@@ -346,23 +461,59 @@ def get_uncorrelated_features(tX):
     return np.where(columns==True)[0]
 
 
-def log_inv(x):
-    # only for columns which are positive in values
-    return np.log(1/(1+x))
 
-def test_fct(tX,y,lambda_,i):
-    tX_1=replace_999_data_elem(tX)
-    features=get_uncorrelated_features(tX_1)
-    tX_1=tX_1[:,features]
-    #creation of segmentation train and train_test 90% / 10%
-    y_train,y_train_test,tx_train,tx_train_test=split_data_train_test(y,tX_1,0.90)
-    #calculate of the weights with the train part 
-    #tx_train_poly=build_poly(tx_train,5)
-    tX_train_poly=build_poly_variance(tx_train,0,i,i,i,i,i)
+
+
+
+def build_k_indices(y, k_fold, seed=1):
+    """build k indices for k-fold."""
+    num_row = y.shape[0]
+    interval = int(num_row / k_fold)
+    np.random.seed(seed)
+    indices = np.random.permutation(num_row)
+    k_indices = [indices[k * interval: (k + 1) * interval]
+                 for k in range(k_fold)]
+
+    return np.array(k_indices)
+
+
+def cross_validation_data(y, tx, k_indices, k=None):
+    """Returns train data and test data, get k'th subgroup in test, others in train
+
+    Note if k is None, k is chosen random"""
+
+    if k is None:
+        k = np.random.randint(len(k_indices))
+
+    tx_test = tx[k_indices[k]]
+    y_test = y[k_indices[k]]
+
+    train_indexes = np.concatenate((k_indices[:k].flatten(), k_indices[k + 1:].flatten()))
+    tx_train = tx[train_indexes, :]
+    y_train = y[train_indexes]
+
+    return y_train, y_test, tx_train, tx_test
+def test_fct(tX, y, lambda_, i):
+    tX_1 = replace_999_data_elem(tX)
+    features = get_uncorrelated_features(tX_1)
+    tX_1 = tX_1[:, features]
+    positive_columns=get_higher_minus_1(tX_1)
+
+    tX_2=log_inv(tX_1[:,positive_columns])
+    tX_1=np.concatenate((tX_1,tX_2),axis=1)
+    tX_1=standardize(tX_1)
+    #tX_2=np.hstack(tX_1[:,features],log_inv[:,positive_columns])
+    
+
+    # creation of segmentation train and train_test 90% / 10%
+    y_train, y_train_test, tx_train, tx_train_test = split_data_train_test(y, tX_1, 0.90)
+    # calculate of the weights with the train part
+    # tx_train_poly=build_poly(tx_train,5)
+    tX_train_poly = build_poly_variance(tx_train, 0, i, i, i, i, i)
     weights, loss = ridge_regression(y_train, tX_train_poly, lambda_)
-    tX_train_test_poly=build_poly_variance(tx_train_test,0,i,i,i,i,i)
-    print("Test: Real  accuracy = ", compute_loss_binary(y_train_test,tX_train_test_poly,weights))
-    return compute_loss_binary(y_train_test,tX_train_test_poly,weights)
+    tX_train_test_poly = build_poly_variance(tx_train_test, 0, i, i, i, i, i)
+    print("Test: Real  accuracy = ", compute_loss_binary(y_train_test, tX_train_test_poly, weights,False))
+    return compute_loss_binary(y_train_test, tX_train_test_poly, weights,False)
 
-b=np.array([2,2])
-c=np.array([3,2])
+
+b = np.array([[-1, 2],[2,2],[1,3]])
