@@ -16,11 +16,10 @@ from proj1_helpers import *
     
 
 def compute_loss_binary(y_test,tx_test,w_train): 
-    y=np.where(y_test==-1,0,1)
-    #y=y_test
     predicted_y=np.dot(tx_test,w_train)
-    #predicted_y=np.where(predicted_y>0,1,-1)
-    predicted_y=np.where(predicted_y>0.5,1,0)
+    
+    predicted_y=np.where(predicted_y>0,1,-1)
+    predicted_y=np.where(predicted_y>0.5,1,-1)
 
     sum_y=predicted_y-y
     return (1-np.count_nonzero(sum_y)/len(sum_y))
@@ -41,7 +40,7 @@ def compute_gradient(y, tx, w):
     """Calculate the gradient"""
 
     # basically we have gradient L(w) = -1/N X^Te where e=(y-Xw)
-    gradient = -1 / len(y) * np.dot(np.transpose(tx), y - np.dot(tx, w))
+    gradient = -1 / np.shape(tx)[0] * np.dot(np.transpose(tx), y - np.dot(tx, w))
     return gradient
 
 
@@ -59,20 +58,17 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
 
     # Define parameters to store w and loss
     w = initial_w
-    w_to_plot = []
-    w_to_plot.append(w)
+    gradient_to_plot = []
 
     for n_iter in range(max_iters):
         current_gradient = compute_gradient(y, tx, w)
         if np.linalg.norm(current_gradient) <= 1e-6:
             break
         w = w - gamma / (n_iter + 1) * compute_gradient(y, tx, w)
-        w_to_plot.append(w)
+        gradient_to_plot.append(np.linalg.norm(compute_gradient(y, tx, w)))
 
-    to_plot = np.zeros((max_iters, 1))
-    for i in range(max_iters):
-        to_plot[i] = compute_loss(y, tx, w_to_plot[i])
-    return w,compute_loss(y,tx,w),to_plot
+    
+    return w,compute_loss(y,tx,w),gradient_to_plot
     
 
     return w, compute_loss(y, tx, w)
@@ -83,20 +79,16 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
 
     n = len(y)
     rnd_sample = np.random.random_integers(0, n - 1, max_iters)
-    w_to_plot = []
+    gradient_to_plot = []
     w = initial_w
 
-    w_to_plot.append(w)
     for n_iter in range(max_iters):
         subgradient = compute_gradient(y[rnd_sample[n_iter]], tx[rnd_sample[n_iter], :], w)
         if np.linalg.norm(subgradient) <= 1e-6:
             break
         w = w - gamma * subgradient
-        w_to_plot.append(w)
-    to_plot = np.zeros((max_iters, 1))
-    for i in range(max_iters):
-        to_plot[i] = compute_loss(y, tx, w_to_plot[i])
-    return w,compute_loss(y,tx,w),to_plot
+        gradient_to_plot.append(np.linalg.norm(subgradient))
+    return w,compute_loss(y,tx,w),gradient_to_plot
 
 def least_squares(y, tx):
     """Least squares regression using normal equations"""
@@ -123,9 +115,8 @@ def ridge_regression(y, tx, lambda_):
 def logistic_regression_S(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using stochastic gradient descent"""
     w = initial_w
-    w_to_plot = []
+    gradient_to_plot = []
 
-    w_to_plot.append(w)
     rnd_sample = np.random.random_integers(0, len(y) - 1, max_iters)
     for n_iter in range(max_iters):
         s = (sigma(np.dot(tx[rnd_sample[n_iter],:], w)) - y[rnd_sample[n_iter]])
@@ -136,12 +127,10 @@ def logistic_regression_S(y, tx, initial_w, max_iters, gamma):
         
         if np.linalg.norm(gradient) <= 1e-6 :
             break
-        w = w - gamma  * gradient
-        w_to_plot.append(w)
-    to_plot = np.zeros((max_iters, 1))
-    for i in range(max_iters):
-        to_plot[i] = compute_loss(y, tx, w_to_plot[i])
-    return w,compute_loss(y,tx,w),to_plot
+        w = w - gamma * gradient
+        gradient_to_plot.append(np.linalg.norm(gradient))
+    
+    return w,compute_loss(y,tx,w),gradient_to_plot
     #return w, compute_loss(y, tx, w)
 
 
@@ -150,8 +139,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using gradient descent"""
     w = initial_w
     print("shape de transpose tx : " , np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ", np.shape(sigma(np.dot(tx,w))))
-    w_to_plot = []
-    w_to_plot.append(w)
+    gradient_to_plot = []
     for n_iter in range(max_iters):
         s_sigma= sigma(np.dot(tx, w))
         # nan is an overflow => can be replaced by the function's value at infinity, namely 1
@@ -160,18 +148,15 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         if np.linalg.norm(gradient) <= 1e-6 :
             break
         w = w - gamma / (n_iter + 1) * gradient
-        w_to_plot.append(w)
-    to_plot = np.zeros((max_iters, 1))
-    for i in range(max_iters):
-        to_plot[i] = compute_loss(y, tx, w_to_plot[i])
-    return w,compute_loss(y,tx,w),to_plot
+        gradient_to_plot.append(np.linalg.norm(gradient))
+    
+    return w,compute_loss(y,tx,w),gradient_to_plot
     #return w, compute_loss(y, tx, w)
 
 def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma):
     w = initial_w
-    w_to_plot = []
+    gradient_to_plot = []
 
-    w_to_plot.append(w)
     rnd_sample = np.random.random_integers(0, len(y) - 1, max_iters)
     for n_iter in range(max_iters):
         s_sigma=sigma(np.dot(tx[rnd_sample[n_iter],:], w))
@@ -186,11 +171,9 @@ def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma):
         if np.linalg.norm(gradient) <= 1e-6 :
             break
         w = w - gamma/(n_iter + 1)   * np.dot(inverse_hessian(s_sigma,tx[rnd_sample[n_iter],:]), gradient) 
-        w_to_plot.append(w)
-    to_plot = np.zeros((max_iters, 1))
-    for i in range(max_iters):
-        to_plot[i] = compute_loss(y, tx, w_to_plot[i])
-    return w, compute_loss(y, tx, w),to_plot
+        gradient_to_plot.append(np.linalg.norm(gradient))
+    
+    return w, compute_loss(y, tx, w),gradient_to_plot
 
    
 def sigma(x):
@@ -362,6 +345,10 @@ def get_uncorrelated_features(tX):
                     columns[j] = False
     return np.where(columns==True)[0]
 
+
+def log_inv(x):
+    # only for columns which are positive in values
+    return np.log(1/(1+x))
 
 def test_fct(tX,y,lambda_,i):
     tX_1=replace_999_data_elem(tX)
