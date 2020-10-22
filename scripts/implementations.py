@@ -16,14 +16,15 @@ from proj1_helpers import *
 # def loss_classification(y,tx,w):
 
 
-def compute_loss_binary(y_test, tx_test, w_train):
-    y = np.where(y_test == -1, 0, 1)
-    # y=y_test
+def compute_accuracy(y_test, tx_test, w_train, is_logistic=False):
     predicted_y = np.dot(tx_test, w_train)
-    # predicted_y=np.where(predicted_y>0,1,-1)
-    predicted_y = np.where(predicted_y > 0.5, 1, 0)
-    sum_y = predicted_y - y
-    return 1 - np.count_nonzero(sum_y) / len(sum_y)  # TODO if len(sum_y) is equal to zero
+
+    if is_logistic:
+        predicted_y = np.where(predicted_y > 0.5, 1, -1)
+    else:
+        predicted_y = np.where(predicted_y > 0, 1, -1)
+    sum_y = predicted_y - y_test
+    return 1 - np.count_nonzero(sum_y) / len(sum_y)
 
 
 def compute_loss(y, tx, w):
@@ -153,7 +154,9 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma: float):
 
         if np.linalg.norm(gradient) <= 1e-6:
             break
-        w = np.subtract(w, gamma / (n_iter + 1) * gradient)
+        w = np.subtract(w, gamma / np.log(n_iter + 2) * gradient)
+        if n_iter % 100 == 0:
+            print("iter: ", n_iter, "norm gradient: ", np.linalg.norm(gradient))
 
     return w, compute_loss(y, tx, w)
 
@@ -174,26 +177,21 @@ def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
         if np.linalg.norm(gradient) <= 1e-6:
             break
         w = w - gamma / (n_iter + 1) * np.dot(inverse_hessian(s_sigma, tx), gradient)
-    print("n_iter : ", n_iter)
+        print("norm gradient: ", np.linalg.norm(gradient))
 
     return w, compute_loss(y, tx, w)
 
 
 def sigma(x):
-    sigma_output = np.exp(x) / (1 + np.exp(x))
+    sigma_output = 1 / (1 + np.exp(-x))
 
     return sigma_output
 
 
 def inverse_hessian(s_sigma, tX):
-    n_row, n_col = tX.shape
-    S_flatten = s_sigma * (1 - s_sigma)  # = np.dot(np.eye(n_row, dtype=float), s_sigma * (1 - s_sigma))  # TODO change this, impossible to allocate np.eye
-                                                                        # We can use a for to multiply each row by
-                                                                        # S[n,n], with this s can be store in 1D array
+    S_flatten = s_sigma * (1 - s_sigma)
 
     return np.linalg.inv(np.dot(np.transpose(tX) * S_flatten, tX))
-    # return np.linalg.inv(np.dot(np.dot(np.transpose(tX), S), tX))
-    # S=np.dot(sigma(np.dot(np.tranpose(tX),w)),np.eye(n_row)-
 
 
 # TODO : check if correct
@@ -337,7 +335,7 @@ def split_data_train_test(y, tx, percentage):
     return y_train, y_test, tx_train, tx_test
 
 
-def clean_data(tx):
+def clean_data(tx):  # Todo change definition
     """Remove lines which contain an element outside [mean - std, mean + std]
     with mean: the mean of the column (feature) and std: the standard deviation of the column (feature)"""
     std_data = np.std(tx, axis=0)
@@ -345,7 +343,7 @@ def clean_data(tx):
 
     clustered_data = np.concatenate((mean_data - std_data < tx, tx < mean_data + std_data), axis=1)
 
-    return tx[np.all(clustered_data, axis=1), :]  # TODO take if less than 30% percent out
+    return np.count_nonzero(clustered_data, axis=1) > clustered_data.shape[1] * 0.8
 
 
 def standardize(x):
@@ -420,8 +418,8 @@ def test_fct(tX, y, lambda_, i):
     tX_train_poly = build_poly_variance(tx_train, 0, i, i, i, i, i)
     weights, loss = ridge_regression(y_train, tX_train_poly, lambda_)
     tX_train_test_poly = build_poly_variance(tx_train_test, 0, i, i, i, i, i)
-    print("Test: Real  accuracy = ", compute_loss_binary(y_train_test, tX_train_test_poly, weights))
-    return compute_loss_binary(y_train_test, tX_train_test_poly, weights)
+    print("Test: Real  accuracy = ", compute_accuracy(y_train_test, tX_train_test_poly, weights))
+    return compute_accuracy(y_train_test, tX_train_test_poly, weights)
 
 
 b = np.array([2, 2])

@@ -12,22 +12,36 @@ DATA_TEST_PATH = '../data/test.csv'
 _, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
 
 lambda_ = 0.00
-max_iters = 200
-gamma = 1e-10
+max_iters = 10000
+gamma = 100
+
+print("tx shape :", tX.shape)
+indexes_to_keep = clean_data(tX)
+tX = tX[indexes_to_keep, :]
+y = y[indexes_to_keep]
+print("tx shape :", tX.shape)
 
 selected_features = remove_features_with_high_frequencies(tX, 10)
-selected_lines = remove_lines_with_999(tX[:, selected_features], 2)
+tX = tX[:, selected_features]
 
-print('Split data cross validation: 80% train, 20% test')
+selected_lines = remove_lines_with_999(tX, 3)
+tX = tX[selected_lines, :]
+y = y[selected_lines]
+
+tX = replace_999_data_elem(tX)
+
+tX = build_poly(tX, 5)
+print("tX shape after precomputing: ", tX.shape)
+
+print('Split data cross validation: 80% train, 20% test tx shape: ')
 k_indices = build_k_indices(y, 5)
-y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y[selected_lines],
-                                                                       tX[:, selected_features][selected_lines, :],
-                                                                       k_indices)
+y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y, standardize(tX), k_indices)
 
-print('compute weights using newton logistic regression')
-weights, loss = newton_logistic_regression(y_train, tx_train, np.zeros((tx_train.shape[1]), dtype=float), max_iters, gamma)
 
-print("Test: Real  accuracy = ", compute_loss_binary(y_train_test, tx_train_test, weights))
+print('compute weights using logistic regression')
+weights, loss = logistic_regression(y_train, tx_train, np.zeros((tx_train.shape[1]), dtype=float), max_iters, gamma)
+
+print("Test: Real  accuracy = ", compute_accuracy(y_train_test, tx_train_test, weights, is_logistic=True))
 
 OUTPUT_PATH = '../data/result.csv'
 y_pred = predict_labels(weights, tX_test[:, selected_features])
