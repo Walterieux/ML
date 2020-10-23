@@ -11,9 +11,9 @@ y, tX, ids = load_csv_data(DATA_TRAIN_PATH)
 #DATA_TEST_PATH = '../data/test.csv'
 #_, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
 
-lambda_ = 1
+lambda_ = 2.705e-05
 max_iters = 10000
-gamma = 2.705e-05
+gamma = 1
 degree = 9
 
 print("tx shape :", tX.shape)
@@ -51,8 +51,11 @@ k_indices = build_k_indices(y, 10)
 y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y, tX_poly, k_indices)
 
 
-print('compute weights using logistic regression')
-weights, loss = logistic_regression(y_train, tx_train, np.zeros((tx_train.shape[1]), dtype=float), max_iters, gamma)
+#print('compute weights using logistic regression')
+#weights, loss = logistic_regression(y_train, tx_train, np.zeros((tx_train.shape[1]), dtype=float), max_iters, gamma)
+
+print('compute weights using ridge regression')
+weights, loss = ridge_regression(y_train, tx_train, lambda_)
 
 print("Test: Real  accuracy = ", compute_accuracy(y_train_test, tx_train_test, weights, is_logistic=True))
 
