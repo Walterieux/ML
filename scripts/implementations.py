@@ -290,7 +290,7 @@ def log_inv(x):
 
 
 def build_poly(x, degree):
-    """polynomial basis functions for input data x, for j=1 up to j=degree"""
+    """polynomial basis functions for input data x, for j=0 up to j=degree"""
 
     x_flat = np.ndarray.flatten(x)  # put all the features one above the other
 
@@ -299,6 +299,7 @@ def build_poly(x, degree):
 
     res[rows, cols] = res[rows, cols] ** (cols + 1)
     res = np.reshape(res, (x.shape[0], -1), 'A')
+    res = np.concatenate((np.ones((x.shape[0], 1)), res), axis=1)
     return res
 
 
