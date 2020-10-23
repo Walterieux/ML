@@ -23,7 +23,7 @@
 \maketitle
 
 \begin{abstract}
-	This project aims at classifying events recorded at CERN. This is achieved by implementing various regressions and eventually combining a subset of them to create a good model. The project also required us to process the given data in order to achieve the best possible results.
+	This project aims at classifying events recorded at CERN. This is achieved by implementing various machine learning regression techniques and eventually using them to create a good model. The project also required us to process the given data in order to achieve the best possible results.
   
 \end{abstract}
 
@@ -34,11 +34,10 @@ train a model enabling classification of a physical event. The assigned goal
 was to create a model capable of classifying data records from CERN as 
 occurrences or non-occurrences of the Higgs boson. 
 
-Section \ref{sec:dataset} 
-describes the given data set in more detail. Over the course of this project we used 
+Section \ref{sec:dataset} describes the given data set in more detail. 
+Over the course of this project we used 
 several different regression techniques learned during the course. In order to find
-the best possible model we then combined some of the implemented regressions and 
-tuned their parameters as needed. An important part of creating a good model is 
+the best possible model we then used one of the implemented regressions with pre-processed data and tuned their parameters as needed. An important part of creating a good model is 
 to have a good training data set. That is why data analysis and cleansing was a major
 part of this project as well. The methods used to analyze and clean our data sets, 
 as well as the steps we went through to find the best regression method are
@@ -74,13 +73,16 @@ As required by the project guidelines we implemented 6 regression techniques. We
 \subsection{Finding the Best Regression Technique} 
 
 % TODO 
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum.
+The regression which we decided to use in order to get the best model is the ridge regression. This decision is based on the fact that ridge regression performed best among all of our implemented regressions, as shown in table \ref{tab:model_accuracy}.
 
-Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+To further improve on the performance of ridge regression we cleaned the input data and TODO (apply inverse log and poly?). Section \ref{ssec:data_proc} describes the steps we took to clean the data and why we decided to clean the input data as we do. Before we dive into the details of TODO, let us first describe a prior attempt at improving ridge regression.
+
+Our initial intuition was that features with large variance should impact the resulting model more than features with low variance. Thus we decided to use augmented feature vectors on the input data according to feature variance. We first order the features in increasing order of their variance. The ordered features are then subdivided into equally sized groups. We used up to 5 groups in our trials. Finally we extend the feature space by raising groups of higher variance to a higher exponent than groups of lower variance. The result are augmented feature vectors with say 5 different exponents, with features of high variance being risen to high exponents.
 
 
 
 \subsection{Data Processing} 
+\label{ssec:data_proc}
 
 % TODO 
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. 
@@ -104,11 +106,12 @@ In this section we analyze our best performing regression and model to the model
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\columnwidth]{denoised_signal_1d}
-	\caption{Gradient convergence for different regression techniques.}
+	\caption{TODO Grid search for lin reg}
 	\vspace{-3mm}
 	\label{fig:gradients}
 \end{figure}
 
+% TODO chenage this paragraph, fig changed, no more gradient
 One criterion to evaluate the performance of a gradient descent regression is the speed at which the gradient converges. In fact, the faster the gradient goes towards 0, the faster our regression will find a good model. Since many of the regressions implemented during this project are gradient descent algorithms, this comparison is relevant. Figure \ref{fig:gradients} shows gradient convergence for our implementations of various gradient descent algorithms.
 
 
