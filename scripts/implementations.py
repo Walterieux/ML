@@ -505,11 +505,9 @@ def test_fct(tX, y, lambda_, i):
     features = get_uncorrelated_features(tX_1)
     tX_1 = tX_1[:, features]
     positive_columns=get_higher_minus_1(tX_1)
-    print(positive_columns)
     tX_2=log_inv(tX_1[:,positive_columns])
     tX_1=np.concatenate((tX_1,tX_2),axis=1)
     tX_1=standardize(tX_1)
-    print(np.shape(tX_1))
     #tX_2=np.hstack(tX_1[:,features],log_inv[:,positive_columns])
     
 
