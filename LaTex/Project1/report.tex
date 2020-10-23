@@ -11,10 +11,10 @@
 
 \author{
 	Jean Gillain\\
-	\textit{sciper no. ??????}
+	\textit{sciper no. 331411}
 	\and
 	 David Desboeufs\\
-	 \textit{sciper no. ??????}
+	 \textit{sciper no. 287441}
 	 \and 
 	 Mathieu Caboche\\
 	 \textit{sciper no. 282182}
@@ -61,74 +61,89 @@ This value could thus be interpreted as an error of measurement. Furthermore we 
 \label{sec:methods}
 As required by the project guidelines we implemented 6 regression techniques. We will not go into the details of their implementation. Rather we will describe how we tried to obtain a best performing model and with which solution we eventually did get the best results. We shall also cover how we cleansed the data sets and for what reasons.
 
+\subsection{Finding the Best Regression Technique} 
+
+The regression which we decided to use in order to get the best model is the ridge regression. This decision is based on the fact that ridge regression performed best among all of our implemented regressions, as shown in table \ref{tab:model_accuracy}.
+
+To further improve on the performance of ridge regression we cleaned the input data and used feature extension. Section \ref{ssec:data_proc} describes the steps we took to clean the data and why we decided to clean the input data as we do. Before we dive into the details of our final feature extension, let us first describe a prior attempt at improving ridge regression.
+
+% TODO fill image
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\columnwidth]{denoised_signal_1d}
+	\caption{Grid search for our implementation of ridge regression}
+	\vspace{-3mm}
+	\label{fig:grid_search}
+\end{figure}
+
+Our initial intuition was that features with large variance should impact the resulting model more than features with low variance. Thus we decided to use augmented feature vectors on the input data according to feature variance. We first sort the features in increasing order of their variance. The ordered features are then subdivided into equally sized groups. The number (and size) of groups is a parameter we are free to adjust. Finally we extend the feature space by building polynomials of higher exponent for groups of higher variance. The result are augmented feature vectors with say 5 different polynomials (if we have 5 groups).
+
+As it turns out, the previously described implementation did not provide an actual improvement over classical ridge regression on the raw (non cleaned) data. That is why we implemented a different feature extension. We first apply the inverse logarithm function (\ref{eq1}) and then a fixed polynomial expansion of degree 9. Note that this introduces a constant term.
+\begin{equation} 
+	\label{eq1}
+	f(x) = \log{\frac{1}{1+x}}
+\end{equation}
+
+Finally, we need to adjust the parameters of our regression. This is the very last step, after data cleaning and feature extension. In order to find the best parameters ($lambda$ and $gamma$), we simply use a grid search algorithm on possible parameter values. Figure \ref{fig:grid_search} shows the obtained results for our best performing regression (data cleaning, feature extension and ridge regression). The best values found are thus: $lambda = $ and $gamma = $
+%TODO ^^
+
 % TODO fill image and decription
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\columnwidth]{denoised_signal_1d}
-	\caption{TODO}
+	\caption{Correlation matrix of all features}
 	\vspace{-3mm}
 	\label{fig:correlation}
 \end{figure}
 
-\subsection{Finding the Best Regression Technique} 
-
-% TODO 
-The regression which we decided to use in order to get the best model is the ridge regression. This decision is based on the fact that ridge regression performed best among all of our implemented regressions, as shown in table \ref{tab:model_accuracy}.
-
-To further improve on the performance of ridge regression we cleaned the input data and TODO (apply inverse log and poly?). Section \ref{ssec:data_proc} describes the steps we took to clean the data and why we decided to clean the input data as we do. Before we dive into the details of TODO, let us first describe a prior attempt at improving ridge regression.
-
-Our initial intuition was that features with large variance should impact the resulting model more than features with low variance. Thus we decided to use augmented feature vectors on the input data according to feature variance. We first order the features in increasing order of their variance. The ordered features are then subdivided into equally sized groups. We used up to 5 groups in our trials. Finally we extend the feature space by raising groups of higher variance to a higher exponent than groups of lower variance. The result are augmented feature vectors with say 5 different exponents, with features of high variance being risen to high exponents.
-
-
-
 \subsection{Data Processing} 
 \label{ssec:data_proc}
 
-% TODO 
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. 
+Let us briefly go over some data cleaning that did not prove effective in improving model performance.
 
-At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.  At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+\begin{itemize}
+	\item Removing features that contain over a given percentage of error values (value $-999$).
+	\item After applying the previous point, removing lines (measurements) that still contain error values.
+	\item Remove features that contain few different values (frequency analysis).
+\end{itemize}
+
+Here are the data cleaning steps that dis prove useful and which we actually use in our best performance regression.
+
+\begin{itemize}
+	\item Replace all error values by the mean of the feature in which they appear. We do not consider error values for mean calculation.
+	\item Compute the correlation matrix between all features and keep only one feature in cases where multiple features are correlated. The correlation matrix is shown in figure \ref{fig:correlation}.
+	\item Standardize all features. This step is the last step of the data cleaning.
+\end{itemize}
 
 \subsection{Model Validation} 
 \label{ssec:model_validation}
 
-% TODO describe how we evaluate the correctness of a model
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+% TODO describe how we evaluate the correctness of a model -> use accuracy and x val
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est
 
 
 
 \section{Results}
 \label{sec:results}
 
-In this section we analyze our best performing regression and model to the models obtained using the given, required regressions.
-
-% TODO fill image
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=\columnwidth]{denoised_signal_1d}
-	\caption{TODO Grid search for lin reg}
-	\vspace{-3mm}
-	\label{fig:gradients}
-\end{figure}
-
-% TODO chenage this paragraph, fig changed, no more gradient
-One criterion to evaluate the performance of a gradient descent regression is the speed at which the gradient converges. In fact, the faster the gradient goes towards 0, the faster our regression will find a good model. Since many of the regressions implemented during this project are gradient descent algorithms, this comparison is relevant. Figure \ref{fig:gradients} shows gradient convergence for our implementations of various gradient descent algorithms.
-
+In this section we analyze our best performing regression (respectively the model obtained by the latter) to the models obtained using our implementations of other regression techniques. 
 
 To compare the performance of the models resulting from our various regression implementations we can simply compare the model accuracy. I.e. we check what percentage of a known classified set is correctly classified by our model, as described in section \ref{ssec:model_validation}. The model accuracies obtained by our various regressions are listed in table \ref{tab:model_accuracy}.
+
+Note that all regressions are run on the raw, uncleaned and unprocessed data except for \textit{Our Best Regression}.
 
 % TODO fill in the correect values, add some lines if necessary
 \begin{table}[h]
 	\begin{tabular}{ |c|c| } 
 		\hline
-		\textbf{Regression Technique} & \textbf{Obtained Model Accuracy}  \\
+		\textbf{Regression Technique} & \textbf{Accuracy (Avg.) - STD}  \\
 		\hline
-		Least Squares GD (and SGD) & 70$\%$ \\ 
-		Least Squares & 70$\%$ \\ 
-		Ridge Regression & 70$\%$ \\ 
-		Logistic Regression & 70$\%$ \\ 
-		Regularized Logistic Regression & 70$\%$ \\ 
-		Our Best Regression & 70$\%$ \\ 
+		Least Squares GD (and SGD) & 70$\%$ - 70$\%$ \\ 
+		Least Squares & 70$\%$ - 70$\%$ \\ 
+		Ridge Regression & 70$\%$ - 70$\%$ \\ 
+		Logistic Regression & 70$\%$ - 70$\%$ \\ 
+		Regularized Logistic Regression & 70$\%$ - 70$\%$ \\ 
+		Our Best Regression & 70$\%$ - 70$\%$ \\ 
 		\hline
 	\end{tabular}
 	\caption{Accuracy of Various Models Obtained by Our Regressions}
