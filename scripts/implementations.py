@@ -362,10 +362,12 @@ def clean_data(tx):  # Todo change definition
 
 
 def standardize(x):
-    centered_data = x - np.mean(x, axis=0)
-    std_data = centered_data / np.std(centered_data, axis=0)
+    mean = np.mean(x, axis=0)
+    centered_data = x - mean
+    std = np.std(centered_data, axis=0)
+    std_data = centered_data / std
 
-    return std_data
+    return std_data, mean, std
 
 def var_mean_of_x(x):
     return np.mean(x,axis=0),np.std(x,axis=0)

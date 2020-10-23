@@ -24,9 +24,9 @@ tX = replace_999_data_elem(tX)
 uncorrelated_features = get_uncorrelated_features(tX)
 tX = tX[:, uncorrelated_features]
 
-positive_columns = get_higher_minus_1(tX)
-tX_1 = log_inv(tX[:, positive_columns])
-tX = np.concatenate((tX, tX_1), axis=1)
+#positive_columns = get_higher_minus_1(tX)
+#tX_1 = log_inv(tX[:, positive_columns])
+#tX = np.concatenate((tX, tX_1), axis=1)
 
 #selected_features = remove_features_with_high_frequencies(tX, 1)
 #tX = tX[:, selected_features]
@@ -40,7 +40,8 @@ tX = np.concatenate((tX, tX_1), axis=1)
 #tX = tX[indexes_to_keep, :]
 #y = y[indexes_to_keep]
 
-tX_poly = build_poly(standardize(tX), degree)
+tX, mean, std = standardize(tX)
+tX_poly = build_poly(tX, degree)
 
 print("tx shape after preprocessing:", tX_poly.shape)
 
@@ -63,9 +64,9 @@ acc_mean = np.mean(acc_cross)
 print("Test: Real  accuracy = ", acc_mean)
 
 
-#DATA_TEST_PATH = '../data/test.csv'
-#_, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
+DATA_TEST_PATH = '../data/test.csv'
+_, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
 
-#OUTPUT_PATH = '../data/result.csv'
-#y_pred = predict_labels(weights_mean, tX_test[:, uncorrelated_features])
-#create_csv_submission(ids_test, y_pred, OUTPUT_PATH)
+OUTPUT_PATH = '../data/result.csv'
+y_pred = predict_labels(weights_mean, build_poly((tX_test[:, uncorrelated_features] - mean)/std, degree))
+create_csv_submission(ids_test, y_pred, OUTPUT_PATH)
