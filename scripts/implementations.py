@@ -239,7 +239,6 @@ def inverse_hessian(s_sigma, tX):
     S_flatten = s_sigma * (1 - s_sigma)  # = np.dot(np.eye(n_row, dtype=float), s_sigma * (1 - s_sigma))  # TODO change this, impossible to allocate np.eye
                                                                         # We can use a for to multiply each row by
     return 1/np.dot(np.transpose(tX) * S_flatten,tX)                                                                  # S[n,n], with this s can be store in 1D array
-    """return np.linalg.inv(np.dot(np.transpose(tX) * S_flatten, tX))
 
 
 
