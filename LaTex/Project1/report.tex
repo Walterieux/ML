@@ -68,16 +68,6 @@ The regression which we decided to use in order to get the best model is the rid
 
 To further improve on the performance of ridge regression we cleaned the input data and used feature extension. Section \ref{ssec:data_proc} describes the steps we took to clean the data and why we decided to clean the input data as we do. Before we dive into the details of our final feature extension, let us first describe a prior attempt at improving ridge regression.
 
-Our initial intuition was that features with large variance should impact the resulting model more than features with low variance. Thus we decided to use augmented feature vectors on the input data according to feature variance. We first sort the features in increasing order of their variance. The ordered features are then subdivided into equally sized groups. The number (and size) of groups is a parameter we are free to adjust. Finally we extend the feature space by building polynomials of higher exponent for groups of higher variance. The result are augmented feature vectors with say 5 different polynomials (if we have 5 groups).
-
-As it turns out, the previously described implementation did not provide an actual improvement over classical ridge regression on the raw (non cleaned) data. That is why we implemented a different feature extension. 
-
-% TODO
-At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
-
-Finally, we need to adjust the parameters of our regression. This is the very last step, after data cleaning and feature extension. In order to find the best parameters ($lambda$ and $gamma$), we simply use a grid search algorithm on possible parameter values. Figure \ref{fig:grid_search} shows the obtained results for our best performing regression (data cleaning, feature extension and ridge regression). The best values found are thus: $lambda = $ and $gamma = $
-%TODO ^^
-
 % TODO fill image
 \begin{figure}[h]
 	\centering
@@ -85,6 +75,26 @@ Finally, we need to adjust the parameters of our regression. This is the very la
 	\caption{Grid search for our implementation of ridge regression}
 	\vspace{-3mm}
 	\label{fig:grid_search}
+\end{figure}
+
+Our initial intuition was that features with large variance should impact the resulting model more than features with low variance. Thus we decided to use augmented feature vectors on the input data according to feature variance. We first sort the features in increasing order of their variance. The ordered features are then subdivided into equally sized groups. The number (and size) of groups is a parameter we are free to adjust. Finally we extend the feature space by building polynomials of higher exponent for groups of higher variance. The result are augmented feature vectors with say 5 different polynomials (if we have 5 groups).
+
+As it turns out, the previously described implementation did not provide an actual improvement over classical ridge regression on the raw (non cleaned) data. That is why we implemented a different feature extension. 
+
+
+% TODO
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+
+Finally, we need to adjust the parameters of our regression. This is the very last step, after data cleaning and feature extension. In order to find the best parameters ($lambda$ and $gamma$), we simply use a grid search algorithm on possible parameter values. Figure \ref{fig:grid_search} shows the obtained results for our best performing regression (data cleaning, feature extension and ridge regression). The best values found are thus: $lambda = $ and $gamma = $
+%TODO ^^
+
+% TODO fill image and decription
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\columnwidth]{denoised_signal_1d}
+	\caption{Correlation matrix of all features}
+	\vspace{-3mm}
+	\label{fig:correlation}
 \end{figure}
 
 \subsection{Data Processing} 
@@ -105,15 +115,6 @@ Here are the data cleaning steps that dis prove useful and which we actually use
 	\item Compute the correlation matrix between all features and keep only one feature in cases where multiple features are correlated. The correlation matrix is shown in figure \ref{fig:correlation}.
 	\item Standardize all features. This step is the last step of the data cleaning.
 \end{itemize}
-
-% TODO fill image and decription
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=\columnwidth]{denoised_signal_1d}
-	\caption{Correlation matrix of all features}
-	\vspace{-3mm}
-	\label{fig:correlation}
-\end{figure}
 
 \subsection{Model Validation} 
 \label{ssec:model_validation}
