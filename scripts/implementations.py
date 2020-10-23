@@ -265,7 +265,7 @@ def sigma(x):
 def inverse_hessian(s_sigma, tX):
     S_flatten = s_sigma * (1 - s_sigma)  # = np.dot(np.eye(n_row, dtype=float), s_sigma * (1 - s_sigma))  # TODO change this, impossible to allocate np.eye
                                                                         # We can use a for to multiply each row by
-    return 1/np.dot(np.tranpose(tX) * S_flatten,tX)                                                                  # S[n,n], with this s can be store in 1D array
+    return 1/np.dot(np.transpose(tX) * S_flatten,tX)                                                                  # S[n,n], with this s can be store in 1D array
     """return np.linalg.inv(np.dot(np.transpose(tX) * S_flatten, tX))
     # return np.linalg.inv(np.dot(np.dot(np.transpose(tX), S), tX))
     # S=np.dot(sigma(np.dot(np.tranpose(tX),w)),np.eye(n_row) """
@@ -373,9 +373,8 @@ def remove_lines_with_999(tx, number: int):
     return lines_selected
 
 
-def variance_half_max_index(tx):  # TODO rename this function?
-    sorted_variance = np.argsort(np.std(tx, axis=0))
-    return sorted_variance[len(sorted_variance) // 5:]
+
+
 
 
 def split_data_train_test(y, tx, percentage):
@@ -406,6 +405,14 @@ def standardize(x):
 
     return std_data
 
+def var_mean_of_x(x):
+    return np.mean(x,axis=0),np.std(x,axis=0)
+
+def center_data_given_mean_var(x,var,mean):
+    centered_data = x - mean
+    std_data = centered_data / var
+
+    return std_data 
 
 # change value which are equal to -999 to 0 TODO (maybe the mean could be an idea too.. certanly a better idea)
 def replace_999_data_elem(tx):
@@ -498,10 +505,11 @@ def test_fct(tX, y, lambda_, i):
     features = get_uncorrelated_features(tX_1)
     tX_1 = tX_1[:, features]
     positive_columns=get_higher_minus_1(tX_1)
-
+    print(positive_columns)
     tX_2=log_inv(tX_1[:,positive_columns])
     tX_1=np.concatenate((tX_1,tX_2),axis=1)
     tX_1=standardize(tX_1)
+    print(np.shape(tX_1))
     #tX_2=np.hstack(tX_1[:,features],log_inv[:,positive_columns])
     
 
@@ -512,8 +520,10 @@ def test_fct(tX, y, lambda_, i):
     tX_train_poly = build_poly_variance(tx_train, 0, i, i, i, i, i)
     weights, loss = ridge_regression(y_train, tX_train_poly, lambda_)
     tX_train_test_poly = build_poly_variance(tx_train_test, 0, i, i, i, i, i)
-    print("Test: Real  accuracy = ", compute_loss_binary(y_train_test, tX_train_test_poly, weights,False))
+    print(compute_loss_binary(y_train_test, tX_train_test_poly, weights,False))
     return compute_loss_binary(y_train_test, tX_train_test_poly, weights,False)
 
 
 b = np.array([[-1, 2],[2,2],[1,3]])
+b=[(9, 3)]
+print(b[0][0])
