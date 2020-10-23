@@ -11,7 +11,7 @@ y, tX, ids = load_csv_data(DATA_TRAIN_PATH)
 DATA_TEST_PATH = '../data/test.csv'
 _, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
 
-lambda_ = 0.00
+lambda_ = 1e-5
 max_iters = 10000
 gamma = 100
 
@@ -30,7 +30,7 @@ y = y[selected_lines]
 
 tX = replace_999_data_elem(tX)
 
-tX = build_poly(tX, 5)
+tX = build_poly(tX, 9)
 print("tX shape after precomputing: ", tX.shape)
 
 print('Split data cross validation: 80% train, 20% test tx shape: ')
@@ -39,7 +39,7 @@ y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y, standa
 
 
 print('compute weights using logistic regression')
-weights, loss = logistic_regression(y_train, tx_train, np.zeros((tx_train.shape[1]), dtype=float), max_iters, gamma)
+weights, loss =  ridge_regression(y_train, tx_train, lambda_)
 
 print("Test: Real  accuracy = ", compute_accuracy(y_train_test, tx_train_test, weights, is_logistic=True))
 

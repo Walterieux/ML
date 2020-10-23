@@ -396,7 +396,7 @@ def calculateCovariance(tX, isBinary):
     outer_v = np.outer(v, v)
     correlation = covariance / outer_v
     if isBinary:
-        return np.where(correlation >= 0.9, 1, 0)
+        return np.where(np.abs(correlation) >= 0.9, 1, 0)
     correlation[covariance == 0] = 0
     return correlation
 
@@ -461,11 +461,12 @@ def cross_validation_data(y, tx, k_indices, k=None):
 
 def test_fct(tX, y, lambda_, i):
     tX_1 = replace_999_data_elem(tX)
-    features = get_uncorrelated_features(tX_1)
-    tX_1 = tX_1[:, features]
+    #features = get_uncorrelated_features(tX_1)
+    #tX_1 = tX_1[:, features]
     positive_columns = get_higher_minus_1(tX_1)
 
     tX_2 = log_inv(tX_1[:, positive_columns])
+    tX_2=standardize(tX_2)
     tX_1 = np.concatenate((tX_1, tX_2), axis=1)
     tX_1 = standardize(tX_1)
     # tX_2=np.hstack(tX_1[:,features],log_inv[:,positive_columns])
@@ -475,9 +476,10 @@ def test_fct(tX, y, lambda_, i):
     # calculate of the weights with the train part
     # tx_train_poly=build_poly(tx_train,5)
     tX_train_poly = build_poly_variance(tx_train, 0, i, i, i, i, i)
+    #tX_train_poly=np.concatenate((tX_train_poly,tX_2[:225000,:]),axis=1)
     weights, loss = ridge_regression(y_train, tX_train_poly, lambda_)
     tX_train_test_poly = build_poly_variance(tx_train_test, 0, i, i, i, i, i)
-    print("Test: Real  accuracy = ", compute_accuracy(y_train_test, tX_train_test_poly, weights, False))
+    #tX_train_test_poly=np.concatenate((tX_train_test_poly,tX_2[225000:,:]),axis=1)
     return compute_accuracy(y_train_test, tX_train_test_poly, weights, False)
 
 
