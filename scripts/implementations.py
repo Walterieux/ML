@@ -417,15 +417,23 @@ def center_data_given_mean_var(x, var, mean):
     return std_data
 
 
-def replace_999_data_elem(tx):
-    """Replace all values equal to -999 by the mean of the column"""
+def replace_999_data_elem(tx, replaced_median=True, values=None):
+    """
+    Replace all values equal to -999 by the median of the column if replaced_median is True
+    
+    if replaced_median is False, -999 are replaced by values[column_of_element]
+
+    Returns tx_updated, medians
+
+    note: median is calculated without -999 values
+    """
 
     rows, cols = np.shape(tx)
-    mean_values_matrix = np.zeros((rows, cols))
+    median_values_matrix = np.zeros((rows, cols))
     for i in range(cols):
-        mean_values_matrix[:, i] = np.mean(tx[tx[:, i] != -999, i])
+        median_values_matrix[:, i] = np.median(tx[tx[:, i] != -999, i]) if replaced_median else values[i]
 
-    return np.where(tx == -999, mean_values_matrix, tx)
+    return np.where(tx == -999, median_values_matrix, tx), median_values_matrix[0]
 
 
 def calculateCovariance(tX, isBinary):
