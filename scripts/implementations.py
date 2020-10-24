@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Sep 24 15:47:51 2020
-
-@author: jeang
 """
 import numpy as np
 from matplotlib import pyplot as plt
@@ -12,6 +10,8 @@ from proj1_helpers import *
 
 
 def compute_accuracy(y_test, tx_test, w_train, is_logistic=False):
+    """Calculate accuracy"""
+
     predicted_y = np.dot(tx_test, w_train)
 
     if is_logistic:
@@ -25,6 +25,7 @@ def compute_accuracy(y_test, tx_test, w_train, is_logistic=False):
 
 def compute_loss(y, tx, w, logistic=False):
     """Calculate the loss using mean squared error (MSE)"""
+
     if logistic:
         return 0.5 * np.mean(np.square(np.where(y == -1, 0, 1) - np.dot(tx, w)))
     return 0.5 * np.mean(np.square(y - np.dot(tx, w)))
@@ -32,6 +33,7 @@ def compute_loss(y, tx, w, logistic=False):
 
 def compute_loss_MAE(y, tx, w, logistic=False):
     """Calculate the loss using mean absolute error (MAE)"""
+
     if logistic:
         return 0.5 * np.mean(np.square(np.where(y == -1, 0, 1) - np.dot(tx, w)))
     return np.mean(np.abs(y - np.dot(tx, w)))
@@ -54,8 +56,6 @@ def compute_gradient(y, tx, w):
 def compute_gradient_MAE(y, tx, w):
     """Calculate the gradient using mean absolute error MAE"""
 
-    # on a 1/N sum_1^N |y-x^_ntw|
-    # donc le gradient ça devrait être -1/N * X^T sign(y-x^t_nw)
     gradient = -1 / np.shape(tx)[0] * np.dot(np.transpose(tx), np.sign(y - np.dot(tx, w)))
     return gradient
 
@@ -75,7 +75,7 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma, toplot=False):
         w = w - gamma / (n_iter + 1) * compute_gradient(y, tx, w)
         gradient_to_plot.append(np.linalg.norm(compute_gradient(y, tx, w)))
 
-    if toplot == True:
+    if toplot:
         return w, compute_loss(y, tx, w), gradient_to_plot
 
     return w, compute_loss(y, tx, w)
@@ -126,14 +126,13 @@ def ridge_regression(y, tx, lambda_):
 
 def logistic_regression_S(y, tx, initial_w, max_iters, gamma, toplot=False):
     """Logistic regression using stochastic gradient descent"""
+
     w = initial_w
     gradient_to_plot = []
 
     rnd_sample = np.random.random_integers(0, len(y) - 1, max_iters)
     for n_iter in range(max_iters):
         s = (sigma(np.dot(tx[rnd_sample[n_iter], :], w)) - y[rnd_sample[n_iter]])
-        # nan is an overflow => can be replaced by the function's value at infinity, namely 1
-        s = np.where(np.isnan(s), 1, s)
 
         gradient = tx[rnd_sample[n_iter], :] * s
 
@@ -154,9 +153,6 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma: float, toplot=False)
 
     for n_iter in range(max_iters):
         s_sigma = sigma(np.dot(tx, w))
-        # TODO : remove next 2 lines
-        # nan is an overflow => can be replaced by the function's value at infinity, namely 1
-        s_sigma = np.where(np.isnan(s_sigma), 1, s_sigma)
         gradient = np.dot(np.transpose(tx), s_sigma - y)
         if np.linalg.norm(gradient) <= 1e-6:
             break
@@ -169,13 +165,13 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma: float, toplot=False)
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Regularized logistic regression using gradient descent"""
+
     w = initial_w
 
     for n_iter in range(max_iters):
         s = sigma(np.dot(tx, w) - y)
         gradient = np.dot(np.transpose(tx), s) + (lambda_ * np.linalg.norm(w))
         if np.linalg.norm(gradient) <= 1e-6:
-            print("IT: ", n_iter)
             break
         w = w - (gamma / (n_iter + 1) * gradient)
 
@@ -183,6 +179,8 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
 
 def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma, toplot=False):
+    """Logistic regression using newton's method"""
+
     w = initial_w
     gradient_to_plot = []
 
@@ -206,9 +204,8 @@ def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma, toplot=Fals
 
 def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using newton's method"""
+
     w = initial_w
-    print("shape de transpose tx : ", np.shape(np.transpose(tx)), " and shape of sigma(np.dot(tx,w)) ",
-          np.shape(sigma(np.dot(tx, w))))
 
     for n_iter in range(max_iters):
         s_sigma = sigma(np.dot(tx, w))
@@ -488,6 +485,3 @@ def test_fct(tX, y, lambda_, i):
     tX_train_test_poly = build_poly_variance(tx_train_test, 0, i, i, i, i, i)
     print("Test: Real  accuracy = ", compute_accuracy(y_train_test, tX_train_test_poly, weights, False))
     return compute_accuracy(y_train_test, tX_train_test_poly, weights, False)
-
-
-b = np.array([[-1, 2], [2, 2], [1, 3]])
