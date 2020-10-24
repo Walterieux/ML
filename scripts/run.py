@@ -39,7 +39,7 @@ for jet in range(4):
         y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y_jet, tX_poly_jet, k_indices, k)
         w, loss = ridge_regression(y_train, tx_train, lambda_)
         weights_cross.append(w)
-        acc_cross.append(compute_accuracy(y_train_test, tx_train_test, w))
+        acc_cross.append(compute_accuracy(y_train_test, tx_train_test, w, False))
 
     weights_mean = np.mean(weights_cross, axis=0)
     acc_mean = np.mean(acc_cross)
