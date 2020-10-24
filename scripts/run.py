@@ -1,5 +1,4 @@
 import numpy as np
-
 from prediction import *
 from proj1_helpers import *
 from implementations import *
@@ -32,21 +31,12 @@ for jet in range(4):
 
     k_indices = build_k_indices(y_jet, k_fold)
 
-    """cross validation"""
-    weights_cross = []
-    acc_cross = []
-    for k in range(k_fold):
-        y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y_jet, tX_poly_jet, k_indices, k)
-        w, loss = ridge_regression(y_train, tx_train, lambda_)
-        weights_cross.append(w)
-        acc_cross.append(compute_accuracy(y_train_test, tx_train_test, w))
+    w, loss = ridge_regression(y_jet, tX_poly_jet, lambda_)
+    acc_mean, std = cross_validation(w, y_jet, tX_poly_jet, k_fold)
 
-    weights_mean = np.mean(weights_cross, axis=0)
-    acc_mean = np.mean(acc_cross)
     print("jet :", jet, " Accuracy: ", acc_mean)
     acc_weighted = acc_mean * np.count_nonzero(jet_indexes[jet])
 
-    weights_JET.append(weights_mean)
     acc_jet.append(acc_weighted)
 
 acc_jet_mean = np.sum(acc_jet) / len(y)

@@ -6,8 +6,6 @@ Created on Thu Sep 24 15:47:51 2020
 """
 import numpy as np
 from matplotlib import pyplot as plt
-# TODO remove: only numpy is allowed
-import seaborn as sns
 import sys
 
 from proj1_helpers import *
@@ -241,13 +239,21 @@ def inverse_hessian(s_sigma, tX):
     return 1/np.dot(np.transpose(tX) * S_flatten,tX)                                                                  # S[n,n], with this s can be store in 1D array
 
 
-
-
-
-
-
     #return np.linalg.inv(np.dot(np.transpose(tX) * S_flatten, tX))
 
+
+def cross_validation(weights, y, tx, k):
+    """k-fold cross validation"""
+    k_indices = build_k_indices(y, k)
+    weights_cross = []
+    acc_cross = []
+    for k in range(k):
+        y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y, tx, k_indices, k)
+        weights_cross.append(weights)
+        acc_cross.append(compute_accuracy(y_train_test, tx_train_test, weights))
+    accuracy = np.mean(acc_cross)
+    standard_dev = np.std(acc_cross)
+    return accuracy, standard_dev
 
 # ######## Preprocessing variance
 
