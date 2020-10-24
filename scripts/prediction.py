@@ -4,10 +4,15 @@ from implementations import *
 
 
 def predict_y_given_weight(weights, tx_test, degree):
-    y = np.zeros(tx_test.shape[0])
+    """
+    Predicts y given the 4 weights and degree
 
+    weights[i] is used to predict y for lines having feature PRI_jet_num == i
+    """
+
+    PRI_jet_num_index = 21
+    y = np.zeros(tx_test.shape[0])
     for jet in range(4):
-        print("shape jet: ", (tx_test[:, 21] == jet).shape, " selected ", np.count_nonzero(tx_test[:, 21] == jet))
-        y[tx_test[:, 21] == jet] = predict_labels(weights[jet], build_poly(tx_test[tx_test[:, 21] == jet, :], degree))
+        y[tx_test[:, PRI_jet_num_index] == jet] = predict_labels(weights[jet], build_poly(tx_test[tx_test[:, PRI_jet_num_index] == jet, :], degree))
 
     return y

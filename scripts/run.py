@@ -1,5 +1,4 @@
 import numpy as np
-
 from prediction import *
 from proj1_helpers import *
 from implementations import *
@@ -22,7 +21,6 @@ tX = tX[:, uncorrelated_features]
 
 tX_poly = build_poly(tX, degree)
 
-
 weights_JET = []
 acc_jet = []
 """Feature 22 separation"""
@@ -43,14 +41,13 @@ for jet in range(4):
 
     weights_mean = np.mean(weights_cross, axis=0)
     acc_mean = np.mean(acc_cross)
-    print("jet :", jet, " Accuracy: ", acc_mean)
     acc_weighted = acc_mean * np.count_nonzero(jet_indexes[jet])
 
     weights_JET.append(weights_mean)
     acc_jet.append(acc_weighted)
 
 acc_jet_mean = np.sum(acc_jet) / len(y)
-print("Test: Real  accuracy = ", acc_jet_mean)
+print("Accuracy = ", acc_jet_mean)
 
 DATA_TEST_PATH = '../data/test.csv'
 _, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
