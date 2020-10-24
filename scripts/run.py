@@ -6,13 +6,13 @@ from implementations import *
 DATA_TRAIN_PATH = '../data/train.csv'
 y, tX, ids = load_csv_data(DATA_TRAIN_PATH)
 
-lambda_ =  1.1e-4 # 2.705e-5
+lambda_ = 1.1e-4
 degree = 7
 k_fold = 20
 
 jet_indexes = []
 for jet in range(4):
-    jet_indexes.append(tX[:, 22] == jet)
+    jet_indexes.append(tX[:, 22] == jet)  # PRI_jet_num is the 22 feature
 
 tX, median_values_matrix = replace_999_data_elem(tX)
 
@@ -21,10 +21,10 @@ tX = tX[:, uncorrelated_features]
 
 tX_poly = build_poly(tX, degree)
 
+"""Feature PRI_jet_num separation"""
 weights_JET = []
 acc_jet = []
-"""Feature PRI_jet_num separation"""
-for jet in range(4):
+for jet in range(4):  # PRI_jet_num contains 4 different values
     tX_poly_jet = tX_poly[jet_indexes[jet]]
     y_jet = y[jet_indexes[jet]]
 

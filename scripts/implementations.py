@@ -9,7 +9,7 @@ from proj1_helpers import *
 
 
 def compute_accuracy(y_test, tx_test, w_train, is_logistic=False):
-    """Calculate accuracy
+    """Calculates accuracy
     
     is_logistic must be True if logistic method is used"""
 
@@ -25,7 +25,7 @@ def compute_accuracy(y_test, tx_test, w_train, is_logistic=False):
 
 
 def compute_loss(y, tx, w, logistic=False):
-    """Calculate the loss using mean squared error (MSE)
+    """Calculates the loss using mean squared error (MSE)
     
     is_logistic must be True if logistic method is used"""
 
@@ -35,7 +35,7 @@ def compute_loss(y, tx, w, logistic=False):
 
 
 def compute_loss_MAE(y, tx, w, logistic=False):
-    """Calculate the loss using mean absolute error (MAE)"""
+    """Calculates the loss using mean absolute error (MAE)"""
 
     if logistic:
         return 0.5 * np.mean(np.square(np.where(y == -1, 0, 1) - np.dot(tx, w)))
@@ -49,7 +49,7 @@ def compute_loss_MAE(y, tx, w, logistic=False):
 # Compute of gradients
 
 def compute_gradient(y, tx, w):
-    """Calculate the gradient"""
+    """Calculates the gradient"""
 
     # basically we have gradient L(w) = -1/N X^Te where e=(y-Xw)
     gradient = -1 / np.shape(tx)[0] * np.dot(np.transpose(tx), y - np.dot(tx, w))
@@ -57,7 +57,7 @@ def compute_gradient(y, tx, w):
 
 
 def compute_gradient_MAE(y, tx, w):
-    """Calculate the gradient using mean absolute error MAE"""
+    """Calculates the gradient using mean absolute error MAE"""
 
     gradient = -1 / np.shape(tx)[0] * np.dot(np.transpose(tx), np.sign(y - np.dot(tx, w)))
     return gradient
@@ -235,7 +235,7 @@ def sigma(x):
 
 
 def inverse_hessian(s_sigma, tX):
-    """Calculate the inverse of the hessian"""
+    """Calculates the inverse of the hessian"""
     S_flatten = s_sigma * (1 - s_sigma)
     return 1/np.dot(np.transpose(tX) * S_flatten, tX)
 
@@ -251,7 +251,7 @@ def sorted_by_variance(tx):
 
 def build_poly_variance(tx, degree1=0, degree2=3, degree3=5, degree4=4, degree5=5):
     """
-    Build polynomial with different degrees depending on their variances respectively
+    Builds polynomial with different degrees depending on their variances respectively
 
     @param tx:
     @param degree1: degree for the first block of columns
@@ -267,8 +267,8 @@ def build_poly_variance(tx, degree1=0, degree2=3, degree3=5, degree4=4, degree5=
     params = np.array([degree1, degree2, degree3, degree4, degree5])
     nb_gr_vr = n_cols // 5
 
-    # compute total number of columns, we add one for the independent term
-    # params[-1] return the last element of params
+    # computes total number of columns, we add one for the independent term
+    # params[-1] returns the last element of params
     n_col_tot = np.sum(params * nb_gr_vr) + 1 + params[-1] * (n_cols % 5)
 
     newx = np.zeros((n_rows, n_col_tot))
@@ -290,7 +290,7 @@ def get_higher_minus_1(x):
 
 
 def log_inv(x):
-    """Calculate the inverse logarithm"""
+    """Calculates the inverse logarithm"""
 
     return np.log(1 / (1 + x))
 
@@ -311,7 +311,7 @@ def build_poly(x, degree):
 
 def remove_features_with_high_frequencies(tx, percentage):
     """
-    Remove all features (columns) that contains element with frequency higher than percentage
+    Removes all features (columns) that contains element with frequency higher than percentage
 
     percentage: [0, 1]
 
@@ -328,7 +328,7 @@ def remove_features_with_high_frequencies(tx, percentage):
 
 def remove_lines_with_999(tx, number: int):
     """
-    Remove all lines that contain more than 'number' of the value '-999'
+    Removes all lines that contain more than 'number' of the value '-999'
 
     returns an array of bool (false if the line is removed)
 
@@ -347,7 +347,7 @@ def remove_lines_with_999(tx, number: int):
 
 def split_data_train_test(y, tx, percentage):
     """
-    split data in percentage to train and 1-percentage to test
+    splits data in percentage to train and 1-percentage to test
 
     percentage: [0, 1]
 
@@ -365,7 +365,7 @@ def split_data_train_test(y, tx, percentage):
 
 def clean_data(tx):
     """
-    Remove lines which contain more than 80% of elements outside [mean - std, mean + std]
+    Removes lines which contains more than 80% of elements outside [mean - std, mean + std]
 
     with mean: the mean of the column (feature) and std: the standard deviation of the column (feature)
 
@@ -397,7 +397,7 @@ def standardize(x):
 
 def var_mean_of_x(x):
     """
-    Calculate the mean and standard deviation of x
+    Calculates the mean and standard deviation of x
 
     Return mean, std
     """
@@ -419,7 +419,7 @@ def center_data_given_mean_var(x, var, mean):
 
 def replace_999_data_elem(tx, replaced_median=True, values=None):
     """
-    Replace all values equal to -999 by the median of the column if replaced_median is True
+    Replaces all values equal to -999 by the median of the column if replaced_median is True
     
     if replaced_median is False, -999 are replaced by values[column_of_element]
 
@@ -470,7 +470,7 @@ def calculateCovariance_y_tX(tX, y):
 
 def get_uncorrelated_features(tX):
     """
-    Get the features that are uncorrelated, it means it deletes the features that are too much correlated with other
+    Gets the features that are uncorrelated, it means it deletes the features that are too much correlated with other
     and discard them
     """
 
@@ -488,7 +488,7 @@ def get_uncorrelated_features(tX):
 
 
 def build_k_indices(y, k_fold, seed=1):
-    """build k indices for k-fold"""
+    """builds k indices for k-fold"""
 
     num_row = y.shape[0]
     interval = int(num_row / k_fold)
@@ -526,6 +526,7 @@ def test_fct(tX, y, lambda_, degree):
 
     Returns accuracy
     """
+
     tX_1 = replace_999_data_elem(tX)
     features = get_uncorrelated_features(tX_1)
     tX_1 = tX_1[:, features]
