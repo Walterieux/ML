@@ -1,14 +1,16 @@
 # Machine Learning CS-433 - Project 1
 
-- **`implementations.py`** contains:
+All python files are in folder `script`, `train.csv` and `test.csv` are in folder `data`. Report in LaTeX and PDF is located in `LaTex` folder.
+
+- **`implementations.py`** contains the following functions:
 	
-	- `compute_accuracy` Calculate accuracy of w with y_test and tx_test
+	- `compute_accuracy` Calculates accuracy of w with y_test and tx_test
 
-	- `compute_loss` Calculate the loss using mean squared error (MSE)
+	- `compute_loss` Calculates the loss using mean squared error (MSE)
 
-	- `compute_loss_MAE` Calculate the loss using mean absolute error (MAE)
+	- `compute_loss_MAE` Calculates the loss using mean absolute error (MAE)
 
-	- `compute_gradient` Calculate the gradient using mean absolute error MAE
+	- `compute_gradient` Calculates the gradient using mean absolute error MAE
 
 	- `least_squares_GD` Linear regression using gradient descent algorithm
 
@@ -30,27 +32,27 @@
 
 	Preprocessing functions:	
 	
-	- `build_poly_variance` Build polynomial with different degrees depending on their variances respectively
+	- `build_poly_variance` Builds polynomial with different degrees depending on their variances respectively
 
 	- `build_poly` polynomial basis functions for input data x, for j=0 up to j=degree
 
-	- `remove_features_with_high_frequencies` Remove all features (columns) that contains element with frequency higher than percentage
+	- `remove_features_with_high_frequencies` Removes all features (columns) that contains element with frequency higher than percentage
 
-	- `remove_lines_with_999` Remove all lines that contain more than 'number' of the value '-999'
+	- `remove_lines_with_999` Removes all lines that contain more than 'number' of the value '-999'
 
-	- `split_data_train_test` split data in percentage to train and 1-percentage to test
+	- `split_data_train_test` splits data in percentage to train and 1-percentage to test
 
-	- `clean_data` Remove lines which contain more than 80% of elements outside [mean - std, mean + std]
+	- `clean_data` Removes lines which contain more than 80% of elements outside [mean - std, mean + std]
 
 	- `standardize` Center the data and divide by the standard deviation
  
-	- `replace_999_data_elem` Replace all values equal to -999 by the median of the column or a defined value passed in argument
+	- `replace_999_data_elem` Replaces all values equal to -999 by the median of the column or a defined value passed in argument
 
-	- `get_uncorrelated_features` Get the features that are uncorrelated
+	- `get_uncorrelated_features` Gets the features that are uncorrelated
 
-- **`prediction.py`** contains:
+- **`prediction.py`** contains the following functions:
 
 	- `predict_y_given_weight` Predicts values given weight and degree
 
 - **`run.py`** :
-	Computes result.csv we submitted on aicrowd using data/train.csv. result.csv is stored in data/. 
+	Computes `result.csv` we submitted on aicrowd using `train.csv` for training. `result.csv` is stored in data/. 
