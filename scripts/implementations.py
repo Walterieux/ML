@@ -4,13 +4,14 @@ Created on Thu Sep 24 15:47:51 2020
 """
 import numpy as np
 from matplotlib import pyplot as plt
-import sys
 
 from proj1_helpers import *
 
 
 def compute_accuracy(y_test, tx_test, w_train, is_logistic=False):
-    """Calculate accuracy"""
+    """Calculate accuracy
+    
+    is_logistic must be True if logistic method is used"""
 
     predicted_y = np.dot(tx_test, w_train)
 
@@ -24,7 +25,9 @@ def compute_accuracy(y_test, tx_test, w_train, is_logistic=False):
 
 
 def compute_loss(y, tx, w, logistic=False):
-    """Calculate the loss using mean squared error (MSE)"""
+    """Calculate the loss using mean squared error (MSE)
+    
+    is_logistic must be True if logistic method is used"""
 
     if logistic:
         return 0.5 * np.mean(np.square(np.where(y == -1, 0, 1) - np.dot(tx, w)))
@@ -39,9 +42,9 @@ def compute_loss_MAE(y, tx, w, logistic=False):
     return np.mean(np.abs(y - np.dot(tx, w)))
 
 
-# --------------------
+# ---------------------------------------------------------------------------------
 # methods to implement
-# --------------------
+# ---------------------------------------------------------------------------------
 
 # Compute of gradients
 
@@ -179,7 +182,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 
 
 def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma, toplot=False):
-    """Logistic regression using newton's method"""
+    """Logistic regression using newton's method with stochastic gradient descent"""
 
     w = initial_w
     gradient_to_plot = []
@@ -203,7 +206,7 @@ def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma, toplot=Fals
 
 
 def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
-    """Logistic regression using newton's method"""
+    """Logistic regression using newton's method with gradient descent"""
 
     w = initial_w
 
@@ -221,6 +224,7 @@ def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
 
 
 def sigma(x):
+    """Apply the sigma function on x"""
     if type(x) == 'numpy.ndarray':
         return_sigma = np.zeros(len(x))
         return_sigma[x > 0] = 1 / (1 + np.exp(-x[x > 0]))
@@ -231,32 +235,43 @@ def sigma(x):
 
 
 def inverse_hessian(s_sigma, tX):
-    S_flatten = s_sigma * (1 - s_sigma)  # = np.dot(np.eye(n_row, dtype=float), s_sigma * (1 - s_sigma))  # TODO change this, impossible to allocate np.eye
-                                                                        # We can use a for to multiply each row by
-    return 1/np.dot(np.transpose(tX) * S_flatten,tX)                                                                  # S[n,n], with this s can be store in 1D array
-
-
-    #return np.linalg.inv(np.dot(np.transpose(tX) * S_flatten, tX))
+    """Calculate the inverse of the hessian"""
+    S_flatten = s_sigma * (1 - s_sigma)
+    return 1/np.dot(np.transpose(tX) * S_flatten, tX)
 
 # ######## Preprocessing variance
 
 
 def sorted_by_variance(tx):
+    """Sort columns by their variance (increasing order)
+
+    Returns the indexes"""
     return np.argsort(np.std(tx, axis=0))
 
 
-def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4, degree5=5):
-    # classification en fonction de la variance de chaque paramètre:
-    nrows, ncols = np.shape(tx)
+def build_poly_variance(tx, degree1=0, degree2=3, degree3=5, degree4=4, degree5=5):
+    """
+    Build polynomial with different degrees depending on their variances respectively
 
-    if allparam == 0:
-        params = np.array([degree1, degree2, degree3, degree4, degree5])
-        nb_gr_vr = ncols // 5
+    @param tx:
+    @param degree1: degree for the first block of columns
+    @param degree2: degree for the second block of columns
+    @param degree3: degree for the third block of columns
+    @param degree4: degree for the forth block of columns
+    @param degree5: degree for the fifth block of columns
+    @return: built polynomial array
+    """
 
-    # calcul du nombre total de colonnes, on ajoute 1 étant donné qu'on impose un terme indépendant.
-    ncol_tot = np.sum(params * nb_gr_vr) + 1 + params[-1] * (ncols % 5)
+    n_rows, n_cols = np.shape(tx)
 
-    newx = np.zeros((nrows, ncol_tot))
+    params = np.array([degree1, degree2, degree3, degree4, degree5])
+    nb_gr_vr = n_cols // 5
+
+    # compute total number of columns, we add one for the independent term
+    # params[-1] return the last element of params
+    n_col_tot = np.sum(params * nb_gr_vr) + 1 + params[-1] * (n_cols % 5)
+
+    newx = np.zeros((n_rows, n_col_tot))
     current = 0
 
     for counter, param in enumerate(params[:-1]):
@@ -265,16 +280,18 @@ def build_poly_variance(tx, allparam, degree1=0, degree2=3, degree3=5, degree4=4
         current = nb_gr_vr * param + current
     newx[:, current:-1] = build_poly(tx[:, (counter + 1) * nb_gr_vr:], params[-1])
     newx[:, -1] = 1
-    # print(newx)
     return newx
 
 
 def get_higher_minus_1(x):
+    """Returns the indexes of columns that contains only value greater than -1"""
+
     return [i for i in range(np.shape(x)[1]) if (x[:, i] > -1).all()]
 
 
 def log_inv(x):
-    # only for columns which are positive in values
+    """Calculate the inverse logarithm"""
+
     return np.log(1 / (1 + x))
 
 
@@ -288,7 +305,7 @@ def build_poly(x, degree):
 
     res[rows, cols] = res[rows, cols] ** (cols + 1)
     res = np.reshape(res, (x.shape[0], -1), 'A')
-    res = np.concatenate((np.ones((x.shape[0], 1)), res), axis=1)
+    res = np.concatenate((np.ones((x.shape[0], 1)), res), axis=1)  # add independent term
     return res
 
 
@@ -296,19 +313,22 @@ def remove_features_with_high_frequencies(tx, percentage):
     """
     Remove all features (columns) that contains element with frequency higher than percentage
 
+    percentage: [0, 1]
+
     returns an array of bool (false if the feature is removed)
     """
+
     feature_selected = np.zeros(tx.shape[1], dtype=bool)
     for ind, tx_row in enumerate(np.transpose(tx)):
         unique, counts = np.unique(tx_row, return_counts=True)
-        feature_selected[ind] = True if counts[0] / len(tx_row) < percentage / 100 else False
+        feature_selected[ind] = True if counts[0] / len(tx_row) < percentage else False
 
     return feature_selected
 
 
 def remove_lines_with_999(tx, number: int):
     """
-    Remove all lines that contains more than 'number' of the value '-999'
+    Remove all lines that contain more than 'number' of the value '-999'
 
     returns an array of bool (false if the line is removed)
 
@@ -317,6 +337,7 @@ def remove_lines_with_999(tx, number: int):
     # >>> remove_lines_with_999(tx, 2)
     # array([False  True])
     """
+
     lines_selected = np.ones(tx.shape[0], dtype=bool)
     for ind, tx_line in enumerate(tx):
         lines_selected[ind] = True if sum(tx_line == -999) <= number else False
@@ -324,12 +345,15 @@ def remove_lines_with_999(tx, number: int):
     return lines_selected
 
 
-
-
-
-
 def split_data_train_test(y, tx, percentage):
-    """split data in percentage to train and 1-percentage to test"""
+    """
+    split data in percentage to train and 1-percentage to test
+
+    percentage: [0, 1]
+
+    Returns y_train, y_test, tx_train, tx_test
+    """
+
     len_y = len(y)
     len_test = int(percentage * len_y)
     y_train = y[:len_test]
@@ -339,9 +363,15 @@ def split_data_train_test(y, tx, percentage):
     return y_train, y_test, tx_train, tx_test
 
 
-def clean_data(tx):  # Todo change definition
-    """Remove lines which contain an element outside [mean - std, mean + std]
-    with mean: the mean of the column (feature) and std: the standard deviation of the column (feature)"""
+def clean_data(tx):
+    """
+    Remove lines which contain more than 80% of elements outside [mean - std, mean + std]
+
+    with mean: the mean of the column (feature) and std: the standard deviation of the column (feature)
+
+    Returns an array of bool
+    """
+
     std_data = np.std(tx, axis=0)
     mean_data = np.mean(tx, axis=0)
 
@@ -351,6 +381,12 @@ def clean_data(tx):  # Todo change definition
 
 
 def standardize(x):
+    """
+    Center the data and divide by the standard deviation
+
+    Returns std_data, mean, std
+    """
+
     mean = np.mean(x, axis=0)
     centered_data = x - mean
     std = np.std(centered_data, axis=0)
@@ -358,21 +394,37 @@ def standardize(x):
 
     return std_data, mean, std
 
-def var_mean_of_x(x):
-    return np.mean(x,axis=0),np.std(x,axis=0)
 
-def center_data_given_mean_var(x,var,mean):
+def var_mean_of_x(x):
+    """
+    Calculate the mean and standard deviation of x
+
+    Return mean, std
+    """
+
+    return np.mean(x, axis=0), np.std(x, axis=0)
+
+
+def center_data_given_mean_var(x, var, mean):
+    """
+    Standardize the data with a given mean and variance
+
+    Returns std_data
+    """
     centered_data = x - mean
     std_data = centered_data / var
 
     return std_data
 
-# change value which are equal to -999 to 0 TODO (maybe the mean could be an idea too.. certanly a better idea)
+
 def replace_999_data_elem(tx):
+    """Replace all values equal to -999 by the mean of the column"""
+
     rows, cols = np.shape(tx)
     mean_values_matrix = np.zeros((rows, cols))
     for i in range(cols):
-        mean_values_matrix[:, i] = np.median(tx[tx[:, i] != -999, i])  # we can put np.mean or np.median as you wish..
+        mean_values_matrix[:, i] = np.mean(tx[tx[:, i] != -999, i])
+
     return np.where(tx == -999, mean_values_matrix, tx)
 
 
@@ -383,6 +435,7 @@ def calculateCovariance(tX, isBinary):
     @type isBinary: bool
     @return: correlation matrix
     """
+
     covariance = np.cov(tX, rowvar=False, bias=True)
     v = np.sqrt(np.diag(covariance))
     outer_v = np.outer(v, v)
@@ -390,6 +443,7 @@ def calculateCovariance(tX, isBinary):
     if isBinary:
         return np.where(correlation >= 0.9, 1, 0)
     correlation[covariance == 0] = 0
+
     return correlation
 
 
@@ -398,9 +452,11 @@ def calculateCovariance_y_tX(tX, y):
     calculation unbiased covariance matrix with y, it does not have a lot of impact it would be too easy if there was
     linear link btw y and one  of the features
     """
+
     y_tX = np.concatenate((np.transpose([y]), tX), axis=1)
     cov_y_tX = calculateCovariance(y_tX, True)
     array_of_corr = np.where(cov_y_tX[:, 0] == 1)
+
     return array_of_corr
 
 
@@ -409,6 +465,7 @@ def get_uncorrelated_features(tX):
     Get the features that are uncorrelated, it means it deletes the features that are too much correlated with other
     and discard them
     """
+
     binary_covariance = calculateCovariance(tX, True)
     n_rows, n_cols = np.shape(binary_covariance)
     columns = np.full((n_rows,), True, dtype=bool)
@@ -418,11 +475,13 @@ def get_uncorrelated_features(tX):
             if binary_covariance[i, j] == 1:
                 if columns[j]:
                     columns[j] = False
+
     return np.where(columns == True)[0]
 
 
 def build_k_indices(y, k_fold, seed=1):
-    """build k indices for k-fold."""
+    """build k indices for k-fold"""
+
     num_row = y.shape[0]
     interval = int(num_row / k_fold)
     np.random.seed(seed)
@@ -434,9 +493,11 @@ def build_k_indices(y, k_fold, seed=1):
 
 
 def cross_validation_data(y, tx, k_indices, k=None):
-    """Returns train data and test data, get k'th subgroup in test, others in train
+    """
+    Returns train data and test data, get k'th subgroup in test, others in train
 
-    Note if k is None, k is chosen random"""
+    Note if k is None, k is chosen random
+    """
 
     if k is None:
         k = np.random.randint(len(k_indices))
@@ -451,7 +512,12 @@ def cross_validation_data(y, tx, k_indices, k=None):
     return y_train, y_test, tx_train, tx_test
 
 
-def test_fct(tX, y, lambda_, i):
+def test_fct(tX, y, lambda_, degree):
+    """
+    Tests ridge regression using specific lambda and degree for polynomial
+
+    Returns accuracy
+    """
     tX_1 = replace_999_data_elem(tX)
     features = get_uncorrelated_features(tX_1)
     tX_1 = tX_1[:, features]
@@ -460,14 +526,14 @@ def test_fct(tX, y, lambda_, i):
     tX_2 = log_inv(tX_1[:, positive_columns])
     tX_1 = np.concatenate((tX_1, tX_2), axis=1)
     tX_1 = standardize(tX_1)
-    # tX_2=np.hstack(tX_1[:,features],log_inv[:,positive_columns])
 
     # creation of segmentation train and train_test 90% / 10%
     y_train, y_train_test, tx_train, tx_train_test = split_data_train_test(y, tX_1, 0.90)
+
     # calculate of the weights with the train part
-    # tx_train_poly=build_poly(tx_train,5)
-    tX_train_poly = build_poly_variance(tx_train, 0, i, i, i, i, i)
+    tX_train_poly = build_poly_variance(tx_train, degree, degree, degree, degree, degree)
     weights, loss = ridge_regression(y_train, tX_train_poly, lambda_)
-    tX_train_test_poly = build_poly_variance(tx_train_test, 0, i, i, i, i, i)
+    tX_train_test_poly = build_poly_variance(tx_train_test, degree, degree, degree, degree, degree)
     print("Test: Real  accuracy = ", compute_accuracy(y_train_test, tX_train_test_poly, weights, False))
+
     return compute_accuracy(y_train_test, tX_train_test_poly, weights, False)

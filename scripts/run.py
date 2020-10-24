@@ -56,5 +56,5 @@ DATA_TEST_PATH = '../data/test.csv'
 _, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
 
 OUTPUT_PATH = '../data/result.csv'
-y_pred = predict_y_given_weight(weights_JET, tX_test[:, uncorrelated_features], degree)
+y_pred = predict_y_given_weight(weights_JET, replace_999_data_elem(tX_test)[:, uncorrelated_features], degree)
 create_csv_submission(ids_test, y_pred, OUTPUT_PATH)
