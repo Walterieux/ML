@@ -69,6 +69,7 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma, toplot=False):
 
     # Define parameters to store w and loss
     w = initial_w
+    w = sanitize_w_shape(w)
     gradient_to_plot = []
 
     for n_iter in range(max_iters):
@@ -91,6 +92,7 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma, toplot=False):
     rnd_sample = np.random.random_integers(0, n - 1, max_iters)
     gradient_to_plot = []
     w = initial_w
+    w = sanitize_w_shape(w)
 
     for n_iter in range(max_iters):
         subgradient = compute_gradient(y[rnd_sample[n_iter]], tx[rnd_sample[n_iter], :], w)
@@ -131,6 +133,7 @@ def logistic_regression_S(y, tx, initial_w, max_iters, gamma, toplot=False):
     """Logistic regression using stochastic gradient descent"""
 
     w = initial_w
+    w = sanitize_w_shape(w)
     gradient_to_plot = []
 
     rnd_sample = np.random.random_integers(0, len(y) - 1, max_iters)
@@ -152,6 +155,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma: float, toplot=False)
     """Logistic regression using gradient descent"""
 
     w = initial_w
+    w = sanitize_w_shape(w)
     gradient_to_plot = []
 
     for n_iter in range(max_iters):
@@ -170,6 +174,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Regularized logistic regression using gradient descent"""
 
     w = initial_w
+    w = sanitize_w_shape(w)
 
     for n_iter in range(max_iters):
         s = sigma(np.dot(tx, w) - y)
@@ -185,6 +190,7 @@ def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma, toplot=Fals
     """Logistic regression using newton's method with stochastic gradient descent"""
 
     w = initial_w
+    w = sanitize_w_shape(w)
     gradient_to_plot = []
 
     rnd_sample = np.random.random_integers(0, len(y) - 1, max_iters)
@@ -209,6 +215,7 @@ def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using newton's method with gradient descent"""
 
     w = initial_w
+    w = sanitize_w_shape(w)
 
     for n_iter in range(max_iters):
         s_sigma = sigma(np.dot(tx, w))
@@ -518,6 +525,14 @@ def cross_validation_data(y, tx, k_indices, k=None):
     y_train = y[train_indexes]
 
     return y_train, y_test, tx_train, tx_test
+
+
+def sanitize_w_shape(w):
+    """Reshape w in order to have w.shape equals ((nb_column_tx, )) """
+    if len(w.shape) == 1:
+        return w
+    else:
+        return w.reshape((-1))
 
 
 def test_fct(tX, y, lambda_, degree):
