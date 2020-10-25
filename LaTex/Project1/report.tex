@@ -2,9 +2,10 @@
 
 \usepackage{hyperref}
 \usepackage{graphicx}	% For figure environment
+\usepackage{caption}
 
-\setlength{\tabcolsep}{11pt}
-\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{15pt}
+\renewcommand{\arraystretch}{1.7}
 
 \begin{document}
 \title{Event Classification Using \\Various Machine Learning Regression Techniques}
@@ -37,8 +38,8 @@ occurrences or non-occurrences of the Higgs boson.
 Section \ref{sec:dataset} describes the given data set in more detail. 
 Over the course of this project we used 
 several different regression techniques learned during the course. In order to find
-the best possible model we then used one of the implemented regressions with pre-processed data and tuned their parameters as needed. An important part of creating a good model is 
-to have a good training data set. That is why data analysis and cleansing was a major
+the best possible model we then used one of the implemented regressions with pre-processed data. An important part of creating a good model is 
+to have a good training data set. That is why data analysis and cleaning was a major
 part of this project as well. The methods used to analyze and clean our data sets, 
 as well as the steps we went through to find the best regression method are
 described in section \ref{sec:methods}. Finally, we will compare the models obtained by 
@@ -48,53 +49,58 @@ various regression techniques to our best performing implementation in section \
 \section{The Higgs boson Data Set}
 \label{sec:dataset}
 The given data set for model training consists of some $250000$ records which classify
-an event as a Higgs boson occurrence or not. The events are recordings of 30 features.
+an event as a Higgs boson occurrence or not. The events are recordings of $30$ features.
 The testing data set is identical except that classification is left up to our model.
 
 Let us describe the training data in more detail so as to highlight the importance of
 analyzing and subsequently cleaning the latter. A look at the records quickly reveals that
 the value $-999$ appears very frequently and for a number of different features and records.
-This value could thus be interpreted as an error of measurement. Furthermore we can notice that some features take on only very few different values while others almost never repeat the same value twice. This raises the question of feature importance, i.e. which features impact the classification a lot and which do not (or even lead to misclassification). Section \ref{sec:methods} describes how we decided to clean the data set with respect to the above mentioned concerns.
+This value could thus be interpreted as an error of measurement. Furthermore we can notice that some features take on only very few different values while others almost never repeat the same value twice. This raises the question of feature importance, i.e. which features impact the classification a lot and which do not (or even lead to misclassification). Finally we noticed that the $22nd$ feature only takes on $4$ different values. One could interpret this feature as an indicator of which machine was used to obtain the results for a given measurement. Section \ref{sec:methods} describes how we decided to clean the data set with respect to the above mentioned concerns.
 
 
 \section{Models and Methods}
 \label{sec:methods}
-As required by the project guidelines we implemented 6 regression techniques. We will not go into the details of their implementation. Rather we will describe how we tried to obtain a best performing model and with which solution we eventually did get the best results. We shall also cover how we cleansed the data sets and for what reasons.
+As specified by the project guidelines we implemented the required regression techniques. We will not go into the details of their implementation. Rather we will describe how we tried to obtain a best performing model and with which solution we eventually did get the best results. We shall also cover how we cleansed the data sets and for what reasons.
 
 \subsection{Finding the Best Regression Technique} 
+\label{ssec:technique}
 
 The regression which we decided to use in order to get the best model is the ridge regression. This decision is based on the fact that ridge regression performed best among all of our implemented regressions, as shown in table \ref{tab:model_accuracy}.
 
-To further improve on the performance of ridge regression we cleaned the input data and used feature extension. Section \ref{ssec:data_proc} describes the steps we took to clean the data and why we decided to clean the input data as we do. Before we dive into the details of our final feature extension, let us first describe a prior attempt at improving ridge regression.
-
-% TODO fill image
+To further improve on the performance of ridge regression we cleaned the input data and used feature extension. Section \ref{ssec:data_proc} describes the steps we took to clean the data. Let us describe a few feature extensions that we implemented and used.
+%TODO fill images
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=\columnwidth]{denoised_signal_1d}
-	\caption{Grid search for our implementation of ridge regression}
-	\vspace{-3mm}
-	\label{fig:grid_search}
+	\begin{minipage}[b]{0.48\linewidth}
+		\includegraphics[width=\textwidth]{denoised_signal_1d}
+		\captionsetup{aboveskip=0.4cm,justification=centering, margin=0.1cm, labelfont=footnotesize, textfont=footnotesize}
+		\caption{Correlation matrix of all features}
+		\label{fig:correlation}
+	\end{minipage}
+	\hspace{0.05cm}
+	\begin{minipage}[b]{0.48\linewidth}
+		\includegraphics[width=\textwidth]{denoised_signal_1d}
+		\captionsetup{aboveskip=0.1cm,justification=centering, margin=0.1cm, labelfont=footnotesize, textfont=footnotesize}
+		\caption{Accuracies obtained for different polynomial extension degrees}
+		\label{fig:grid_search}
+	\end{minipage}
 \end{figure}
 
-Our initial intuition was that features with large variance should impact the resulting model more than features with low variance. Thus we decided to use augmented feature vectors on the input data according to feature variance. We first sort the features in increasing order of their variance. The ordered features are then subdivided into equally sized groups. The number (and size) of groups is a parameter we are free to adjust. Finally we extend the feature space by building polynomials of higher exponent for groups of higher variance. The result are augmented feature vectors with say 5 different polynomials (if we have 5 groups).
+Our initial intuition was that features with large variance should impact the resulting model more than features with low variance. Thus we decided to use augmented feature vectors on the input data according to feature variance. We first sort the features in increasing order of their variance. The ordered features are then subdivided into equally sized groups. The number (and size) of groups is a parameter we are free to adjust. 
 
-As it turns out, the previously described implementation did not provide an actual improvement over classical ridge regression on the raw (non cleaned) data. That is why we implemented a different feature extension. We first apply the inverse logarithm function (\ref{eq1}) and then a fixed polynomial expansion of degree 9. Note that this introduces a constant term.
+Finally we extend the feature space by building polynomials of higher exponent for groups of higher variance. The result are augmented feature vectors with say $5$ different polynomials (if we have $5$ groups).
+
+As it turns out, the previously described implementation did not provide an actual improvement over classical ridge regression on the raw (non cleaned) data. That is why we implemented a different feature extension. We first apply the inverse logarithm function (\ref{eq1}) and then a fixed polynomial expansion of degree $9$.
 \begin{equation} 
 	\label{eq1}
 	f(x) = \log{\frac{1}{1+x}}
 \end{equation}
 
-Finally, we need to adjust the parameters of our regression. This is the very last step, after data cleaning and feature extension. In order to find the best parameters ($lambda$ and $gamma$), we simply use a grid search algorithm on possible parameter values. Figure \ref{fig:grid_search} shows the obtained results for our best performing regression (data cleaning, feature extension and ridge regression). The best values found are thus: $lambda = $ and $gamma = $
-%TODO ^^
+Although this feature extension gave us our best possible results when cross-validating, we were unable to apply the same feature extension on the test set, yielding this implementation unusable for the purposes of this project. In fact, the nature of the inverse logarithm function forces us to discard features with negative measurements (values). Since the features removed on the train set and the test set may differ, we cannot use the inverse logarithm function.
 
-% TODO fill image and decription
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=\columnwidth]{denoised_signal_1d}
-	\caption{Correlation matrix of all features}
-	\vspace{-3mm}
-	\label{fig:correlation}
-\end{figure}
+In the end, using ridge regression with polynomial feature extension of degree $7$ (for all features) proved to yield the best valid results. In order to find the best parameters ($lambda$ and $gamma$) for our ridge regression, we simply used a grid search algorithm on possible parameter values. Figure \ref{fig:grid_search} shows why we determined $7$ to be the best polynomial degree to use.
+%TODO check degree
+
 
 \subsection{Data Processing} 
 \label{ssec:data_proc}
@@ -105,21 +111,21 @@ Let us briefly go over some data cleaning that did not prove effective in improv
 	\item Removing features that contain over a given percentage of error values (value $-999$).
 	\item After applying the previous point, removing lines (measurements) that still contain error values.
 	\item Remove features that contain few different values (frequency analysis).
+	\item Standardize all features. This step is the last step of the data cleaning.
 \end{itemize}
 
 Here are the data cleaning steps that dis prove useful and which we actually use in our best performance regression.
 
 \begin{itemize}
-	\item Replace all error values by the mean of the feature in which they appear. We do not consider error values for mean calculation.
+	\item Replace all error values by the median of the feature in which they appear. We do not consider error values for median calculation.
 	\item Compute the correlation matrix between all features and keep only one feature in cases where multiple features are correlated. The correlation matrix is shown in figure \ref{fig:correlation}.
-	\item Standardize all features. This step is the last step of the data cleaning.
+	\item Split the data into $4$ parts according to the $4$ different values taken on by the $22nd$ feature. Compute the weights per data part and use the corresponding weights when classifying a measurement (discriminate using the $22nd$ feature again).
 \end{itemize}
 
 \subsection{Model Validation} 
 \label{ssec:model_validation}
 
-% TODO describe how we evaluate the correctness of a model -> use accuracy and x val
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est
+To validate our obtained models we used cross-validation using the given training data set. We have to apply all feature extensions and data cleaning steps on the testing data part, just as we do on the training data part. 
 
 
 
@@ -138,22 +144,24 @@ Note that all regressions are run on the raw, uncleaned and unprocessed data exc
 		\hline
 		\textbf{Regression Technique} & \textbf{Accuracy (Avg.) - STD}  \\
 		\hline
-		Least Squares GD (and SGD) & 70$\%$ - 70$\%$ \\ 
-		Least Squares & 70$\%$ - 70$\%$ \\ 
-		Ridge Regression & 70$\%$ - 70$\%$ \\ 
-		Logistic Regression & 70$\%$ - 70$\%$ \\ 
-		Regularized Logistic Regression & 70$\%$ - 70$\%$ \\ 
-		Our Best Regression & 70$\%$ - 70$\%$ \\ 
+		Least Squares GD (and SGD) & $70\%$ - $70\%$ \\ 
+		Least Squares & $70\%$ - $70\%$ \\ 
+		Ridge Regression & $70\%$ - $70\%$ \\ 
+		Logistic Regression & $70\%$ - $70\%$ \\ 
+		Regularized Logistic Regression & $70\%$ - $70\%$ \\ 
+		Our Best Regression & $70\%$ - $70\%$ \\ 
 		\hline
 	\end{tabular}
+	\captionsetup{aboveskip=0.3cm,justification=centering, margin=0.1cm, labelfont=footnotesize, textfont=footnotesize}
 	\caption{Accuracy of Various Models Obtained by Our Regressions}
 	\label{tab:model_accuracy}
 \end{table}
 
+It is worth mentioning that we obtained a cross-validation accuracy mean of about $83\%$ using the inverse logarithm and polynomial with degree $9$ feature extension on ridge regression with the aforementioned useful data processing (cf. section \ref{ssec:data_proc}). As mentioned in section \ref{ssec:technique} this result is however irrelevant for this project.
+
 \section{Summary}
 \label{sec:summary}
-% TODO
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+This project allowed us to experiment with multiple regression techniques and we learned the importance of good data processing for machine learning problems. During project development we went through many trials in order to build the best possible model. We concluded that proper data analysis and processing played a major role and greatly helped us to find better results.
 
 
 
