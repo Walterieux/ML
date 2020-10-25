@@ -63,20 +63,20 @@ Finally we noticed that the $22nd$ feature only takes on $4$ different values. O
 \section{Models and Methods}
 \label{sec:methods}
 As specified by the project guidelines we implemented the required regression techniques. We will not go into the details of their implementation. Rather we will describe how we tried to obtain a best performing model and with which solution we eventually did get the best results. We shall also cover how we cleansed the data sets and for what reasons.
-%TODO fill images
+
 \begin{figure}[h]
 	\centering
 	\begin{minipage}[b]{0.48\linewidth}
-		\includegraphics[width=\textwidth]{denoised_signal_1d}
+		\includegraphics[width=\textwidth]{correlation.png}
 		\captionsetup{aboveskip=0.4cm,justification=centering, margin=0.1cm, labelfont=footnotesize, textfont=footnotesize}
 		\caption{Correlation matrix of all features}
 		\label{fig:correlation}
 	\end{minipage}
 	\hspace{0.05cm}
 	\begin{minipage}[b]{0.48\linewidth}
-		\includegraphics[width=\textwidth]{denoised_signal_1d}
+		\includegraphics[width=\textwidth]{grid_search.png}
 		\captionsetup{aboveskip=0.1cm,justification=centering, margin=0.1cm, labelfont=footnotesize, textfont=footnotesize}
-		\caption{Accuracies obtained for different polynomial extension degrees}
+		\caption{Accuracies obtained for different polynomial extension degrees and $\lambda$ values}
 		\label{fig:grid_search}
 	\end{minipage}
 \end{figure}
@@ -102,8 +102,7 @@ Although this feature extension gave us our best possible results when cross-val
 
 In fact, the nature of the inverse logarithm function forces us to discard features with negative measurements (values). Since the features removed on the train set and the test set may differ, we cannot use the inverse logarithm function.
 
-In the end, using ridge regression with polynomial feature extension of degree $7$ (for all features) proved to yield the best valid results. In order to find the best parameters ($lambda$ and $gamma$) for our ridge regression, we simply used a grid search algorithm on possible parameter values. Figure \ref{fig:grid_search} shows why we determined $7$ to be the best polynomial degree to use.
-%TODO check degree
+In the end, using ridge regression with polynomial feature extension of degree $8$ (for all features) proved to yield the best valid results. In order to find the best parameters ($\lambda$ and degree) for our ridge regression, we simply used a grid search algorithm on possible parameter values. Figure \ref{fig:grid_search} shows why we determined $8$ to be the best polynomial degree to use.
 
 
 \subsection{Data Processing} 
@@ -142,8 +141,7 @@ In this section we analyze our best performing regression (respectively the mode
 
 To compare the performance of the models resulting from our various regression implementations we can simply compare the model accuracy. I.e. we check what percentage of a known classified set is correctly classified by our model, as described in section \ref{ssec:model_validation}. The model accuracies obtained by our various regressions are listed in table \ref{tab:model_accuracy}.
 
-% TODO check degree
-The regression technique denoted as \textit{Our Best Regression} consists of all useful data cleaning and processing steps listed in section \ref{ssec:data_proc}, as well as polynomial extension of degree $7$ on ridge regression.
+The regression technique denoted as \textit{Our Best Regression} consists of all useful data cleaning and processing steps listed in section \ref{ssec:data_proc}, as well as polynomial extension of degree $8$ on ridge regression.
 
 Note that all regressions are run on the raw, uncleaned and unprocessed data except for \textit{Our Best Regression}. The only exception being the fact that we use polynomial feature extension where specified.
 
@@ -153,9 +151,9 @@ Note that all regressions are run on the raw, uncleaned and unprocessed data exc
 		\hline
 		\textbf{Regression Technique} & \textbf{Accuracy (Avg.) - STD}  \\
 		\hline
-		Least Squares GD (and SGD) & $70.5\%$ - $0.29\%$ \\ 
-		Least Squares & $??\%$ - $??\%$ \\ 
-		Ridge Regression & $??\%$ - $??\%$ \\ 
+		Least Squares GD (and SGD) & $68.5\%$ - $0.20\%$ \\ 
+		Least Squares & $74.4\%$ - $0.25\%$ \\ 
+		Ridge Regression & $74.4\%$ - $0.24\%$ \\ 
 		Logistic Regression & $65.7\%$ - $0.29\%$ \\ 
 		Newton Logistic Regression & $65.7\%$ - $0.29\%$ \\ 
 		Our Best Regression & $81.3\%$ - $??\%$ \\ 

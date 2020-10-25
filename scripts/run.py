@@ -49,6 +49,7 @@ for jet in range(4):  # PRI_jet_num contains 4 different values
 
 acc_jet_mean = np.sum(acc_jet) / len(y)
 print("Accuracy = ", acc_jet_mean)
+print("Accuracy = ", np.std(acc_jet))
 
 DATA_TEST_PATH = '../data/test.csv'
 _, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
