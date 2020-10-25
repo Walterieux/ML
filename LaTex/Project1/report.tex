@@ -90,13 +90,15 @@ Our initial intuition was that features with large variance should impact the re
 
 Finally we extend the feature space by building polynomials of higher exponent for groups of higher variance. The result are augmented feature vectors with say $5$ different polynomials (if we have $5$ groups).
 
-As it turns out, the previously described implementation did not provide an actual improvement over classical ridge regression on the raw (non cleaned) data. That is why we implemented a different feature extension. We first apply the inverse logarithm function (\ref{eq1}) and then a fixed polynomial expansion of degree $9$.
+As it turns out, the previously described implementation did not provide an actual improvement over classical ridge regression on the raw (non cleaned) data. That is why we implemented a different feature extension. We first apply the inverse logarithm function (\ref{eq1}) and then a fixed polynomial extension of degree $9$.
 \begin{equation} 
 	\label{eq1}
 	f(x) = \log{\frac{1}{1+x}}
 \end{equation}
 
-Although this feature extension gave us our best possible results when cross-validating, we were unable to apply the same feature extension on the test set, yielding this implementation unusable for the purposes of this project. In fact, the nature of the inverse logarithm function forces us to discard features with negative measurements (values). Since the features removed on the train set and the test set may differ, we cannot use the inverse logarithm function.
+Although this feature extension gave us our best possible results when cross-validating, we were unable to apply the same feature extension on the test set, yielding this implementation unusable for the purposes of this project. 
+
+In fact, the nature of the inverse logarithm function forces us to discard features with negative measurements (values). Since the features removed on the train set and the test set may differ, we cannot use the inverse logarithm function.
 
 In the end, using ridge regression with polynomial feature extension of degree $7$ (for all features) proved to yield the best valid results. In order to find the best parameters ($lambda$ and $gamma$) for our ridge regression, we simply used a grid search algorithm on possible parameter values. Figure \ref{fig:grid_search} shows why we determined $7$ to be the best polynomial degree to use.
 %TODO check degree
