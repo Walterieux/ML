@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/W32TeX) (preloaded format=pdflatex 2020.3.14)  25 OCT 2020 16:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/W32TeX) (preloaded format=pdflatex 2020.3.14)  25 OCT 2020 17:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -384,10 +384,10 @@ Package rerunfilecheck Info: File `report.out' has not changed.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 176.
  ) 
 Here is how much of TeX's memory you used:
- 6973 strings out of 480994
- 113391 string characters out of 5916032
+ 6974 strings out of 480994
+ 113409 string characters out of 5916032
  378802 words of memory out of 5000000
- 22386 multiletter control sequences out of 15000+600000
+ 22387 multiletter control sequences out of 15000+600000
  566319 words of font info for 81 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  41i,8n,42p,447b,428s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -401,7 +401,7 @@ c:/texlive/2019/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/texlive/2019/te
 xmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/texlive/2019/texmf-dist/fonts/ty
 pe1/urw/times/utmr8a.pfb><c:/texlive/2019/texmf-dist/fonts/type1/urw/times/utmr
 i8a.pfb>
-Output written on report.pdf (2 pages, 133807 bytes).
+Output written on report.pdf (2 pages, 135742 bytes).
 PDF statistics:
  116 PDF objects out of 1000 (max. 8388607)
  97 compressed objects within 1 object stream

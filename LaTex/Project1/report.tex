@@ -100,7 +100,7 @@ As it turns out, the previously described implementation did not provide an actu
 
 Although this feature extension gave us our best possible results when cross-validating, we were unable to apply the same feature extension on the test set, yielding this implementation unusable for the purposes of this project. 
 
-In fact, the nature of the inverse logarithm function forces us to discard features with negative measurements (values). Since the features removed on the train set and the test set may differ, we cannot use the inverse logarithm function.
+In fact, the nature of the inverse logarithm function forces us to discard features that contain values which make the inverse logarithm tend to infinity. Since the features removed on the train set and the test set may differ, we cannot use the inverse logarithm function.
 
 In the end, using ridge regression with polynomial feature extension of degree $8$ (for all features) proved to yield the best valid results. In order to find the best parameters ($\lambda$ and degree) for our ridge regression, we simply used a grid search algorithm on possible parameter values. Figure \ref{fig:grid_search} shows why we determined $8$ to be the best polynomial degree to use.
 
@@ -120,9 +120,9 @@ Let us briefly go over some data cleaning that did not prove effective in improv
 Here are the data cleaning steps that did prove useful and which we actually use in our best performance regression.
 
 \begin{itemize}
-	\item Replace all error values by the median of the feature in which they appear. We do not consider error values for median calculation.
-	\item Compute the correlation matrix between all features and keep only one feature in cases where multiple features are correlated. The correlation matrix is shown in figure \ref{fig:correlation}.
-	\item Split the data into $4$ parts according to the $4$ different values taken on by the $22nd$ feature. Compute the weights per data part and use the corresponding weights when classifying a measurement (discriminate using the $22nd$ feature).
+	\item Replace all error values by the mean of the feature in which they appear. We do not consider error values for mean calculation.
+	\item Compute the correlation matrix between all features and keep only one feature in cases where multiple features are strongly correlated (more than $90\%$ in our case). The correlation matrix is shown in figure \ref{fig:correlation}.
+	\item Split the data into $4$ parts according to the $4$ different values taken on by the $22nd$ feature, $PRI\_jet\_num$. Compute the weights per data part and use the corresponding weights when classifying a measurement (discriminate using the $22nd$ feature).
 \end{itemize}
 
 \subsection{Model Validation} 
