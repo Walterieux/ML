@@ -55,7 +55,9 @@ The testing data set is identical except that classification is left up to our m
 Let us describe the training data in more detail so as to highlight the importance of
 analyzing and subsequently cleaning the latter. A look at the records quickly reveals that
 the value $-999$ appears very frequently and for a number of different features and records.
-This value could thus be interpreted as an error of measurement. Furthermore we can notice that some features take on only very few different values while others almost never repeat the same value twice. This raises the question of feature importance, i.e. which features impact the classification a lot and which do not (or even lead to misclassification). Finally we noticed that the $22nd$ feature only takes on $4$ different values. One could interpret this feature as an indicator of which machine was used to obtain the results for a given measurement. Section \ref{sec:methods} describes how we decided to clean the data set with respect to the above mentioned concerns.
+This value could thus be interpreted as an error of measurement. Furthermore we can notice that some features take on only very few different values while others almost never repeat the same value twice. This raises the question of feature importance, i.e. which features impact the classification a lot and which do not (or even lead to misclassification). 
+
+Finally we noticed that the $22nd$ feature only takes on $4$ different values. One could interpret this feature as an indicator of which machine was used to obtain the results for a given measurement. Section \ref{sec:methods} describes how we decided to clean the data set with respect to the above mentioned concerns.
 
 
 \section{Models and Methods}
