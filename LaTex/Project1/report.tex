@@ -61,13 +61,6 @@ This value could thus be interpreted as an error of measurement. Furthermore we 
 \section{Models and Methods}
 \label{sec:methods}
 As specified by the project guidelines we implemented the required regression techniques. We will not go into the details of their implementation. Rather we will describe how we tried to obtain a best performing model and with which solution we eventually did get the best results. We shall also cover how we cleansed the data sets and for what reasons.
-
-\subsection{Finding the Best Regression Technique} 
-\label{ssec:technique}
-
-The regression which we decided to use in order to get the best model is the ridge regression. This decision is based on the fact that ridge regression performed best among all of our implemented regressions, as shown in table \ref{tab:model_accuracy}.
-
-To further improve on the performance of ridge regression we cleaned the input data and used feature extension. Section \ref{ssec:data_proc} describes the steps we took to clean the data. Let us describe a few feature extensions that we implemented and used.
 %TODO fill images
 \begin{figure}[h]
 	\centering
@@ -85,6 +78,13 @@ To further improve on the performance of ridge regression we cleaned the input d
 		\label{fig:grid_search}
 	\end{minipage}
 \end{figure}
+
+\subsection{Finding the Best Regression Technique} 
+\label{ssec:technique}
+
+The regression which we decided to use in order to get the best model is the ridge regression. This decision is based on the fact that ridge regression performed best among all of our implemented regressions, as shown in table \ref{tab:model_accuracy}.
+
+To further improve on the performance of ridge regression we cleaned the input data and used feature extension. Section \ref{ssec:data_proc} describes the steps we took to clean the data. Let us describe a few feature extensions that we implemented and used.
 
 Our initial intuition was that features with large variance should impact the resulting model more than features with low variance. Thus we decided to use augmented feature vectors on the input data according to feature variance. We first sort the features in increasing order of their variance. The ordered features are then subdivided into equally sized groups. The number (and size) of groups is a parameter we are free to adjust. 
 
@@ -110,24 +110,26 @@ In the end, using ridge regression with polynomial feature extension of degree $
 Let us briefly go over some data cleaning that did not prove effective in improving model performance.
 
 \begin{itemize}
-	\item Removing features that contain over a given percentage of error values (value $-999$).
-	\item After applying the previous point, removing lines (measurements) that still contain error values.
+	\item Remove features that contain over a given percentage of error values (value $-999$).
+	\item After applying the previous point, remove lines (measurements) that still contain error values.
 	\item Remove features that contain few different values (frequency analysis).
 	\item Standardize all features. This step is the last step of the data cleaning.
 \end{itemize}
 
-Here are the data cleaning steps that dis prove useful and which we actually use in our best performance regression.
+Here are the data cleaning steps that did prove useful and which we actually use in our best performance regression.
 
 \begin{itemize}
 	\item Replace all error values by the median of the feature in which they appear. We do not consider error values for median calculation.
 	\item Compute the correlation matrix between all features and keep only one feature in cases where multiple features are correlated. The correlation matrix is shown in figure \ref{fig:correlation}.
-	\item Split the data into $4$ parts according to the $4$ different values taken on by the $22nd$ feature. Compute the weights per data part and use the corresponding weights when classifying a measurement (discriminate using the $22nd$ feature again).
+	\item Split the data into $4$ parts according to the $4$ different values taken on by the $22nd$ feature. Compute the weights per data part and use the corresponding weights when classifying a measurement (discriminate using the $22nd$ feature).
 \end{itemize}
 
 \subsection{Model Validation} 
 \label{ssec:model_validation}
 
 To validate our obtained models we used cross-validation using the given training data set. We have to apply all feature extensions and data cleaning steps on the testing data part, just as we do on the training data part. 
+
+We used 10-fold cross-validation to assert the accuracy of all of our implementations.
 
 
 
@@ -138,7 +140,10 @@ In this section we analyze our best performing regression (respectively the mode
 
 To compare the performance of the models resulting from our various regression implementations we can simply compare the model accuracy. I.e. we check what percentage of a known classified set is correctly classified by our model, as described in section \ref{ssec:model_validation}. The model accuracies obtained by our various regressions are listed in table \ref{tab:model_accuracy}.
 
-Note that all regressions are run on the raw, uncleaned and unprocessed data except for \textit{Our Best Regression}.
+% TODO check degree
+The regression technique denoted as \textit{Our Best Regression} consists of all useful data cleaning and processing steps listed in section \ref{ssec:data_proc}, as well as polynomial extension of degree $7$ on ridge regression.
+
+Note that all regressions are run on the raw, uncleaned and unprocessed data except for \textit{Our Best Regression}. The only exception being the fact that we use polynomial feature extension where specified.
 
 % TODO fill in the correect values, add some lines if necessary
 \begin{table}[h]
@@ -146,12 +151,12 @@ Note that all regressions are run on the raw, uncleaned and unprocessed data exc
 		\hline
 		\textbf{Regression Technique} & \textbf{Accuracy (Avg.) - STD}  \\
 		\hline
-		Least Squares GD (and SGD) & $70\%$ - $70\%$ \\ 
-		Least Squares & $70\%$ - $70\%$ \\ 
-		Ridge Regression & $70\%$ - $70\%$ \\ 
-		Logistic Regression & $70\%$ - $70\%$ \\ 
-		Regularized Logistic Regression & $70\%$ - $70\%$ \\ 
-		Our Best Regression & $70\%$ - $70\%$ \\ 
+		Least Squares GD (and SGD) & $70.5\%$ - $0.29\%$ \\ 
+		Least Squares & $??\%$ - $??\%$ \\ 
+		Ridge Regression & $??\%$ - $??\%$ \\ 
+		Logistic Regression & $65.7\%$ - $0.29\%$ \\ 
+		Newton Logistic Regression & $65.7\%$ - $0.29\%$ \\ 
+		Our Best Regression & $??\%$ - $??\%$ \\ 
 		\hline
 	\end{tabular}
 	\captionsetup{aboveskip=0.3cm,justification=centering, margin=0.1cm, labelfont=footnotesize, textfont=footnotesize}
@@ -161,8 +166,8 @@ Note that all regressions are run on the raw, uncleaned and unprocessed data exc
 
 It is worth mentioning that we obtained a cross-validation accuracy mean of about $83\%$ using the inverse logarithm and polynomial with degree $9$ feature extension on ridge regression with the aforementioned useful data processing (cf. section \ref{ssec:data_proc}). As mentioned in section \ref{ssec:technique} this result is however irrelevant for this project.
 
-\section{Summary}
-\label{sec:summary}
+\section{Conclusion}
+\label{sec:conclusion}
 This project allowed us to experiment with multiple regression techniques and we learned the importance of good data processing for machine learning problems. During project development we went through many trials in order to build the best possible model. We concluded that proper data analysis and processing played a major role and greatly helped us to find better results.
 
 
