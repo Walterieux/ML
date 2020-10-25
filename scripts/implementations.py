@@ -7,11 +7,6 @@ from matplotlib import pyplot as plt
 
 from proj1_helpers import *
 
-def sanitize_w_shape(w):
-    if len(w.shape)==1:
-        return w
-    else: 
-        return w.reshape((-1))
 
 def compute_accuracy(y_test, tx_test, w_train, is_logistic=False):
     """Calculates accuracy
@@ -242,7 +237,8 @@ def sigma(x):
 def inverse_hessian(s_sigma, tX):
     """Calculates the inverse of the hessian"""
     S_flatten = s_sigma * (1 - s_sigma)
-    return 1/np.dot(np.transpose(tX) * S_flatten, tX)
+    return 1 / np.dot(np.transpose(tX) * S_flatten, tX)
+
 
 # ######## Preprocessing variance
 
@@ -525,25 +521,34 @@ def cross_validation_data(y, tx, k_indices, k=None):
     return y_train, y_test, tx_train, tx_test
 
 
-
-def function_cross_validation(y,tx,k_fold,function_of_test,Is_Gradient_Descent,Is_Logistic,lambda_=1e-5,gamma=1e-7,max_iters=100000):
+def function_cross_validation(y, tx, k_fold, function_of_test, Is_Gradient_Descent, Is_Logistic, lambda_=1e-5,
+                              gamma=1e-7, max_iters=100000):
     weights_cross = []
     acc_cross = []
-    print("hello")
     k_indices = build_k_indices(y, k_fold)
     for k in range(k_fold):
         y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y, tx, k_indices, k)
         if Is_Gradient_Descent:
-            w, loss = function_of_test(y_train, tx_train, np.zeros(np.shape(tx)[1]), max_iters, gamma,False)
+            w, loss = function_of_test(y_train, tx_train, np.zeros(np.shape(tx)[1]), max_iters, gamma, False)
         else:
-            w,loss = function_of_test(y_train,tx_train , lambda_)
+            w, loss = function_of_test(y_train, tx_train, lambda_)
 
         weights_cross.append(w)
         acc_cross.append(compute_accuracy(y_train_test, tx_train_test, w, Is_Logistic))
         print(compute_accuracy(y_train_test, tx_train_test, w, Is_Logistic))
     acc_mean = np.mean(acc_cross)
     acc_std = np.std(acc_cross)
-    return acc_mean,acc_std
+    return acc_mean, acc_std
+
+
+def sanitize_w_shape(w):
+    """Reshape w in order to have w.shape equals ((nb_column_tx, )) """
+
+    if len(w.shape) == 1:
+        return w
+    else:
+        return w.reshape((-1))
+
 
 def test_fct(tX, y, lambda_, degree):
     """
@@ -553,12 +558,10 @@ def test_fct(tX, y, lambda_, degree):
     """
 
     tX_1 = replace_999_data_elem(tX)
-    #features = get_uncorrelated_features(tX_1)
-    #tX_1 = tX_1[:, features]
     positive_columns = get_higher_minus_1(tX_1)
 
     tX_2 = log_inv(tX_1[:, positive_columns])
-    tX_2=standardize(tX_2)
+    tX_2 = standardize(tX_2)
     tX_1 = np.concatenate((tX_1, tX_2), axis=1)
     tX_1 = standardize(tX_1)
 
