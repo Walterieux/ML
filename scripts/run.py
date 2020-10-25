@@ -11,38 +11,67 @@ y, tX, ids = load_csv_data(DATA_TRAIN_PATH)
 DATA_TEST_PATH = '../data/test.csv'
 _, tX_test, ids_test = load_csv_data(DATA_TEST_PATH)
 
-lambda_ = 1e-5
+lambda_ = 2.705e-05
 max_iters = 10000
-gamma = 100
+gamma = 1
+degree = 9
 
 print("tx shape :", tX.shape)
-indexes_to_keep = clean_data(tX)
-tX = tX[indexes_to_keep, :]
-y = y[indexes_to_keep]
-print("tx shape :", tX.shape)
-
-selected_features = remove_features_with_high_frequencies(tX, 10)
-tX = tX[:, selected_features]
-
-selected_lines = remove_lines_with_999(tX, 3)
-tX = tX[selected_lines, :]
-y = y[selected_lines]
-
+print("tx test shape :",tX_test.shape)
 tX = replace_999_data_elem(tX)
+tX_test=tX_test[:,uncorrelated_features]
 
-tX = build_poly(tX, 9)
-print("tX shape after precomputing: ", tX.shape)
+uncorrelated_features = get_uncorrelated_features(tX)
+tX = tX[:, uncorrelated_features]
+positive_columns = get_higher_minus_1(tX)
+positive_columns_of_test= get_higher_minus_1(tX_test)
+positive_columns=np.intersect1d(positive_columns, positive_columns_of_test)
+tX_1 = log_inv(tX[:, positive_columns])
+mean_tX,var_tX=var_mean_of_x(tX)
+tX = np.concatenate((standardize(tX), tX_1), axis=1)
 
-print('Split data cross validation: 80% train, 20% test tx shape: ')
-k_indices = build_k_indices(y, 5)
-y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y, standardize(tX), k_indices)
 
 
-print('compute weights using logistic regression')
-weights, loss =  ridge_regression(y_train, tx_train, lambda_)
 
-print("Test: Real  accuracy = ", compute_accuracy(y_train_test, tx_train_test, weights, is_logistic=True))
+#selected_features = remove_features_with_high_frequencies(tX, 50)
+#tX = tX[:, selected_features]
+
+
+#selected_lines = remove_lines_with_999(tX, 2)
+#tX = tX[selected_lines, :]
+#y = y[selected_lines]
+
+#indexes_to_keep = clean_data(tX)
+#tX = tX[indexes_to_keep, :]
+#y = y[indexes_to_keep]
+
+tX_poly = build_poly((tX), degree)
+
+print("tx shape after preprocessing:", tX.shape)
+
+
+print('Split data cross validation: 90% train, 10% test tx shape: ')
+k_indices = build_k_indices(y, 10)
+y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y, tX_poly, k_indices)
+
+
+#print('compute weights using logistic regression')
+#weights, loss = logistic_regression(y_train, tx_train, np.zeros((tx_train.shape[1]), dtype=float), max_iters, gamma)
+
+print('compute weights using ridge regression')
+weights, loss = ridge_regression(y_train, tx_train, lambda_)
+
+
+print("Test: Real  accuracy = ", compute_accuracy(y_train_test, tx_train_test, weights, is_logistic=False))
+
+
+
+
+tX_test=np.concatenate((standardize(tX_test), log_inv(tX_test[:, positive_columns])), axis=1)
+#tX_test=center_data_given_mean_var(tX_test,mean_tX,var_tX)
+tX_test = build_poly(tX_test,degree)
 
 OUTPUT_PATH = '../data/result.csv'
-y_pred = predict_labels(weights, tX_test[:, selected_features])
+y_pred = predict_labels(weights, tX_test)
+print("y_pred ", np.shape(y_pred))
 create_csv_submission(ids_test, y_pred, OUTPUT_PATH)
