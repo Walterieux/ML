@@ -7,6 +7,11 @@ from matplotlib import pyplot as plt
 
 from proj1_helpers import *
 
+def sanitize_w_shape(w):
+    if len(w.shape)==1:
+        return w
+    else: 
+        return w.reshape((-1))
 
 def compute_accuracy(y_test, tx_test, w_train, is_logistic=False):
     """Calculates accuracy
@@ -68,7 +73,7 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma, toplot=False):
     """Linear regression using gradient descent algorithm"""
 
     # Define parameters to store w and loss
-    w = initial_w[:,0]
+    w = sanitize_w_shape(initial_w)
     gradient_to_plot = []
 
     for n_iter in range(max_iters):
@@ -90,7 +95,7 @@ def least_squares_SGD(y, tx, initial_w, max_iters, gamma, toplot=False):
     n = len(y)
     rnd_sample = np.random.random_integers(0, n - 1, max_iters)
     gradient_to_plot = []
-    w = initial_w[:,0]
+    w = sanitize_w_shape(initial_w)
 
     for n_iter in range(max_iters):
         subgradient = compute_gradient(y[rnd_sample[n_iter]], tx[rnd_sample[n_iter], :], w)
@@ -130,7 +135,7 @@ def ridge_regression(y, tx, lambda_):
 def logistic_regression_S(y, tx, initial_w, max_iters, gamma, toplot=False):
     """Logistic regression using stochastic gradient descent"""
 
-    w = initial_w[:,0]
+    w = sanitize_w_shape(initial_w)
     gradient_to_plot = []
 
     rnd_sample = np.random.random_integers(0, len(y) - 1, max_iters)
@@ -151,7 +156,7 @@ def logistic_regression_S(y, tx, initial_w, max_iters, gamma, toplot=False):
 def logistic_regression(y, tx, initial_w, max_iters, gamma: float, toplot=False):
     """Logistic regression using gradient descent"""
 
-    w = initial_w[:,0]
+    w = sanitize_w_shape(initial_w)
     gradient_to_plot = []
 
     for n_iter in range(max_iters):
@@ -169,7 +174,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma: float, toplot=False)
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """Regularized logistic regression using gradient descent"""
 
-    w = initial_w[:,0]
+    w = sanitize_w_shape(initial_w)
 
     for n_iter in range(max_iters):
         s = sigma(np.dot(tx, w) - y)
@@ -184,7 +189,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
 def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma, toplot=False):
     """Logistic regression using newton's method with stochastic gradient descent"""
 
-    w = initial_w[:,0]
+    w = sanitize_w_shape(initial_w)
     gradient_to_plot = []
 
     rnd_sample = np.random.random_integers(0, len(y) - 1, max_iters)
@@ -208,7 +213,7 @@ def newton_logistic_regression_s(y, tx, initial_w, max_iters, gamma, toplot=Fals
 def newton_logistic_regression(y, tx, initial_w, max_iters, gamma):
     """Logistic regression using newton's method with gradient descent"""
 
-    w = initial_w[:,0]
+    w = sanitize_w_shape(initial_w)
 
     for n_iter in range(max_iters):
         s_sigma = sigma(np.dot(tx, w))
@@ -524,11 +529,12 @@ def cross_validation_data(y, tx, k_indices, k=None):
 def function_cross_validation(y,tx,k_fold,function_of_test,Is_Gradient_Descent,Is_Logistic,lambda_=1e-5,gamma=1e-7,max_iters=100000):
     weights_cross = []
     acc_cross = []
+    print("hello")
     k_indices = build_k_indices(y, k_fold)
     for k in range(k_fold):
         y_train, y_train_test, tx_train, tx_train_test = cross_validation_data(y, tx, k_indices, k)
         if Is_Gradient_Descent:
-            w, loss = function_of_test(y_train, tx_train, np.zeros((np.shape(tx)[1],1)), max_iters, gamma,False)
+            w, loss = function_of_test(y_train, tx_train, np.zeros(np.shape(tx)[1]), max_iters, gamma,False)
         else:
             w,loss = function_of_test(y_train,tx_train , lambda_)
 
